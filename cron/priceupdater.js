@@ -1,6 +1,7 @@
 const nodecron = require("node-cron");
 const puppeteer = require("puppeteer");
 const dotenv = require("dotenv");
+const {query} = require ('../helpers/query.js');
 const path = require("path");
 const fs = require("fs");
 
@@ -39,7 +40,7 @@ nodecron.schedule("0 5 * * *", async () => {
 const testRun = async () => {
   console.log("Test started...");
 
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   await page.goto("https://www.cardmarket.com/en/Magic");
