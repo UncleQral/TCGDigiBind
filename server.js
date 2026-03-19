@@ -30,6 +30,12 @@ app.use('/game', gamesRouter);
 const expansionsRouter = require('./routes/expansion.js');
 app.use('/expansion', expansionsRouter);
 
+const conditionRouter = require('./routes/condition.js');
+app.use('/condition', conditionRouter);
+
+const rarityRouter = require('./routes/rarity.js');
+app.use('/rarity', rarityRouter);
+
 require('./cron/priceupdater.js');
 require('./cron/setupsets.js');
 
