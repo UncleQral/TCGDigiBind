@@ -61,7 +61,7 @@ const saveSets = async (game_id, sets) => {
   }
 };
 
-nodecron.schedule('0 6 * * *', async ()=>{
+nodecron.schedule('0 6 * 1 *', async ()=>{
     for (const tcg of TCG_APIS){
         try{
             const sets = await tcg.fetch();

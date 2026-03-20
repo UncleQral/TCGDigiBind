@@ -36,6 +36,12 @@ app.use('/condition', conditionRouter);
 const rarityRouter = require('./routes/rarity.js');
 app.use('/rarity', rarityRouter);
 
+const gradedCardRouter = require('./routes/graded_card.js');
+app.use('/graded_card', gradedCardRouter);
+
+const gradingCompanyRouter = require('./routes/grading_company.js');
+app.use('/grading_company', gradingCompanyRouter);
+
 require('./cron/priceupdater.js');
 require('./cron/setupsets.js');
 
