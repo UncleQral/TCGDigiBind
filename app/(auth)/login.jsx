@@ -35,6 +35,7 @@ export default function LoginScreen() {
         setError("Login failed");
       }
     } catch (err) {
+      console.log("Login error: ", err);
       setError("something went wrong!");
     }
   };

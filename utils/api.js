@@ -1,4 +1,4 @@
-const BASE_URL = "http://10.223.106.62:3000";
+const BASE_URL = "https://tcgdigibind-production.up.railway.app";
 
 let authToken = null;
 
