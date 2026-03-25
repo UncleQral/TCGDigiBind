@@ -67,6 +67,12 @@ export default function Homescreen() {
     getBinders();
   }, []);
 
+  useEffect(() => {
+    if (selectedBinders.length === 0 && selectionMode) {
+      setSelectionMode(false);
+    }
+  }, [selectedBinders]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
