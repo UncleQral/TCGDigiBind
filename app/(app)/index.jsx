@@ -20,6 +20,8 @@ export default function Homescreen() {
   const [loading, setLoading] = useState(true);
   const [filterActive, setFilterActive] = useState(false);
   const [showBinderModal, setShowBinderModal] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedBinders, setSelectedBinders] = useState([]);
 
   const router = useRouter();
 
@@ -34,6 +36,33 @@ export default function Homescreen() {
       console.log(err);
     }
   };
+
+  const handleLongPress = (id) => {
+    setSelectionMode(true);
+    setSelectedBinders([id]);
+  };
+
+  const handleSelect = (id) => {
+    if (selectedBinders.includes(id)) {
+      setSelectedBinders(selectedBinders.filter((b) => b !== id));
+    } else {
+      setSelectedBinders([...selectedBinders, id]);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await Promise.all(
+        selectedBinders.map((id) => api.delete(`/binder/${id}`)),
+      );
+      setSelectionMode(false);
+      setSelectedBinders([]);
+      getBinders();
+    } catch (err) {
+      console.log("Delete error:", err);
+    }
+  };
+
   useEffect(() => {
     getBinders();
   }, []);
@@ -79,11 +108,36 @@ export default function Homescreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
         data={binders}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <BinderEntity item={item} />}
+        renderItem={({ item }) => (
+          <BinderEntity
+            item={item}
+            onLongPress={() => handleLongPress(item.id)}
+            onPress={() => (selectionMode ? handleSelect(item.id) : null)}
+            isSelected={selectedBinders.includes(item.id)}
+          />
+        )}
       />
 
       <View style={styles.bottomBar}>
-        {showOptions ? (
+        {selectionMode ? (
+          <View style={styles.addContainer}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => {
+                setSelectionMode(false);
+                setSelectedBinders([]);
+              }}
+            >
+              <Text style={styles.optionText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+              <Ionicons name="trash-outline" size={24} color="#fff" />
+              <Text style={styles.optionText}>
+                Delete ({selectedBinders.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : showOptions ? (
           <View style={styles.addContainer}>
             <TouchableOpacity
               style={styles.productBinder}
@@ -221,5 +275,23 @@ const styles = StyleSheet.create({
   optionText: {
     color: "#ffffff",
     fontWeight: "500",
+  },
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: "#333",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+  },
+  deleteBtn: {
+    flex: 1,
+    backgroundColor: "#d00000",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginLeft: 10,
   },
 });

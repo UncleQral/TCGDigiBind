@@ -1,15 +1,11 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+    BottomSheetTextInput,
+    BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
-import {
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../utils/api";
 
 export default function BinderCreationModal({ visible, onClose }) {
@@ -21,7 +17,7 @@ export default function BinderCreationModal({ visible, onClose }) {
 
   useEffect(() => {
     if (visible) {
-      bottomSheetRef.current?.expand();
+      bottomSheetRef.current?.snapToIndex(0);
     } else {
       bottomSheetRef.current?.close();
     }
@@ -54,6 +50,7 @@ export default function BinderCreationModal({ visible, onClose }) {
   const handleCreate = async () => {
     console.log("handleCreate called!");
     console.log("Data: ", { binderName, binderGame, binderSet, binderPic });
+    console.log("Sending:", { binderName, binderGame, binderSet, binderPic });
     try {
       const data = await api.post("/binder", {
         name: binderName,
@@ -73,11 +70,13 @@ export default function BinderCreationModal({ visible, onClose }) {
     <BottomSheet
       ref={bottomSheetRef}
       index={visible ? 0 : -1}
-      snapPoints={["50%"]}
+      snapPoints={["50%", "75%"]}
       onClose={onClose}
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="none"
     >
       <BottomSheetView>
         <View style={styles.popupContainer}>
@@ -92,7 +91,7 @@ export default function BinderCreationModal({ visible, onClose }) {
           </TouchableOpacity>
 
           <View style={{ flex: 1 }}>
-            <TextInput
+            <BottomSheetTextInput
               style={styles.input}
               placeholder="Binder Name"
               placeholderTextColor="#9CA3AF"
@@ -100,7 +99,7 @@ export default function BinderCreationModal({ visible, onClose }) {
               onChangeText={setBinderName}
             />
 
-            <TextInput
+            <BottomSheetTextInput
               style={styles.input}
               placeholder="Select Game..."
               placeholderTextColor="#9CA3AF"
@@ -108,7 +107,7 @@ export default function BinderCreationModal({ visible, onClose }) {
               onChangeText={setBinderGame}
             />
 
-            <TextInput
+            <BottomSheetTextInput
               style={styles.input}
               placeholder="Select Set..."
               placeholderTextColor="#9CA3AF"

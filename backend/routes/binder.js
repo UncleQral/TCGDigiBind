@@ -37,9 +37,9 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-router.delete("/", auth, async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
-    const id = req.body.id;
+    const id = req.params.id;
     const user_id = req.user.id;
 
     const results = await query(

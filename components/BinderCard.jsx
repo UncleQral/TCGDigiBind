@@ -1,8 +1,17 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function BinderEntity({ item }) {
+export default function BinderEntity({
+  item,
+  onLongPress,
+  onPress,
+  isSelected,
+}) {
   return (
-    <TouchableOpacity>
+    <TouchableOpacity
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={[styles.container, isSelected && styles.selected]}
+    >
       <View style={styles.container}>
         <Image
           source={{ uri: item.image_url }}
@@ -78,5 +87,9 @@ const styles = StyleSheet.create({
     color: "#ffc300",
     fontWeight: "500",
     fontSize: 14,
+  },
+  selected: {
+    borderColor: "#ff7b00",
+    borderWidth: 2,
   },
 });
