@@ -1,4 +1,5 @@
 import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     FlatList,
@@ -8,6 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import BinderEntity from "../../components/BinderCard";
+import CreateBinderModal from "../../components/CreateBinderModal";
 import { api } from "../../utils/api";
 
 export default function Homescreen() {
@@ -16,11 +19,15 @@ export default function Homescreen() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterActive, setFilterActive] = useState(false);
+  const [showBinderModal, setShowBinderModal] = useState(false);
+
+  const router = useRouter();
 
   const getBinders = async () => {
     try {
       const data = await api.get("/binder");
       setBinders(data);
+      console.log(binders);
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -72,24 +79,56 @@ export default function Homescreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
         data={binders}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View>
-            <Text>{item.name}</Text>
-          </View>
-        )}
+        renderItem={({ item }) => <BinderEntity item={item} />}
       />
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => setShowOptions(!showOptions)}
-        >
-          <Text style={styles.addBtnText}>+</Text>
-        </TouchableOpacity>
+        {showOptions ? (
+          <View style={styles.addContainer}>
+            <TouchableOpacity
+              style={styles.productBinder}
+              onPress={() => router.push("/(app)/createProduct")}
+            >
+              <Text style={styles.optionText}>Product Binder</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.closeAddBtn}
+              onPress={() => setShowOptions(false)}
+            >
+              <Text style={styles.optionText}>x</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cardBinder}
+              onPress={() => {
+                setShowOptions(false);
+                setShowBinderModal(true);
+              }}
+            >
+              <Text style={styles.optionText}>Card Binder</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => setShowOptions(!showOptions)}
+          >
+            <Text style={styles.addBtnText}>+</Text>
+          </TouchableOpacity>
+        )}
       </View>
+      <CreateBinderModal
+        visible={showBinderModal}
+        onClose={() => {
+          setShowBinderModal(false);
+          getBinders();
+        }}
+      />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#1A1A1A" },
   header: {
@@ -144,4 +183,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
   },
   addBtnText: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+  addContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: "#2A2A2A",
+  },
+  productBinder: {
+    flex: 1,
+    backgroundColor: "#1A1A1A",
+    borderWidth: 1,
+    borderColor: "#ffc300",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+  },
+  closeAddBtn: {
+    width: 44,
+    height: 44,
+    backgroundColor: "#333",
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 10,
+  },
+  cardBinder: {
+    flex: 1,
+    backgroundColor: "#1A1A1A",
+    borderWidth: 1,
+    borderColor: "#ffc300",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+  },
+  optionText: {
+    color: "#ffffff",
+    fontWeight: "500",
+  },
 });

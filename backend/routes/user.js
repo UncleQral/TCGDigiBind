@@ -62,7 +62,7 @@ router.post("/register", async (req, res) => {
 
 router.delete("/", auth, async (req, res) => {
   try {
-    const user_id = req.body.user_id;
+    const user_id = req.user.id;
 
     const results = await query("DELETE FROM user WHERE id = ?", [user_id]);
 
@@ -74,7 +74,7 @@ router.delete("/", auth, async (req, res) => {
 
 router.put("/", auth, async (req, res) => {
   try {
-    const user_id = req.body.user_id;
+    const user_id = req.user.id;
     const email = req.body.email;
 
     const password = req.body.password;
