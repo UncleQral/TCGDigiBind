@@ -5,7 +5,14 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    Image,
+    Keyboard,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { api } from "../utils/api";
 
 export default function BinderCreationModal({ visible, onClose }) {
@@ -65,18 +72,25 @@ export default function BinderCreationModal({ visible, onClose }) {
       console.log("Error details: ", JSON.stringify(err));
     }
   };
+  useEffect(() => {
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setTimeout(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+      }, 160);
+    });
+    return () => hideSubscription.remove();
+  }, []);
 
   return (
     <BottomSheet
       ref={bottomSheetRef}
       index={visible ? 0 : -1}
-      snapPoints={["50%", "75%"]}
+      snapPoints={["75%"]}
       onClose={onClose}
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="none"
+      keyboardBehavior="extend"
     >
       <BottomSheetView>
         <View style={styles.popupContainer}>
