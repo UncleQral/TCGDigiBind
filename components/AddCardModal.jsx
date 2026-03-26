@@ -61,7 +61,9 @@ export default function AddCardModal({ visible, onClose, binder }) {
       if (binder?.game) params.append("game", binder.game);
       if (binder?.binder_set) params.append("expansion_id", binder.binder_set);
 
+      console.log("Search params: ", params.toString());
       const data = await api.get(`/card/search?${params.toString()}`);
+      console.log("Search results: ", data);
       setSearchResults(data);
     } catch (err) {
       console.log("searchCard error:", err);
@@ -172,7 +174,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
             <Text
               style={{ color: "#9CA3AF", textAlign: "center", marginTop: 12 }}
             >
-              {cardName ? "Keine Karten gefunden" : "Kartenname eingeben..."}
+              {cardName ? "No Card found" : "Cardname..."}
             </Text>
           }
         />
@@ -183,7 +185,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
           onPress={handleAddCard}
           disabled={!pickCard}
         >
-          <Text style={styles.addBtnText}>Inser Card</Text>
+          <Text style={styles.addBtnText}>Insert Card</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>
