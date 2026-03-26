@@ -71,8 +71,7 @@ export default function BinderCreationModal({ visible, onClose }) {
 
   const handleCreate = async () => {
     console.log("handleCreate called!");
-    console.log("Data: ", { binderName, binderGame, binderSet, binderPic });
-    console.log("Sending:", { binderName, binderGame, binderSet, binderPic });
+    console.log("Data: ", { binderName, binderGameId, binderSetId, binderPic });
     try {
       const selectedGame = games.find((g) => g.id === binderGameId);
       const selectedSet = expansions.find((e) => e.id === binderSetId);
