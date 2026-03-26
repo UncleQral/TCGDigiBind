@@ -1,5 +1,4 @@
-import {
-    BottomSheet,
+import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -11,7 +10,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import { api } from "../utils/api";
 
@@ -96,10 +95,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
       keyboardBehavior="extend"
     >
       <BottomSheetView style={styles.container}>
-
         {/* Photo + Inputs side by side */}
         <View style={styles.topRow}>
-
           {/* Photo left */}
           <View style={styles.imageContainer}>
             <TouchableOpacity
