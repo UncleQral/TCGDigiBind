@@ -118,7 +118,7 @@ export default function Homescreen() {
           <BinderEntity
             item={item}
             onLongPress={() => handleLongPress(item.id)}
-            onPress={() => (selectionMode ? handleSelect(item.id) : null)}
+            onPress={() => selectionMode ? handleSelect(item.id) : router.push(`/(app)/binderDetail/${item.id}`)}
             isSelected={selectedBinders.includes(item.id)}
           />
         )}

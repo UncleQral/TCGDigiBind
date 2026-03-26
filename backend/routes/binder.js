@@ -18,6 +18,26 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user_id = req.user.id;
+
+    const results = await query(
+      "SELECT * FROM binder WHERE id = ? AND user_id = ?",
+      [id, user_id]
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Binder not found" });
+    }
+
+    res.json(results[0]);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 router.post("/", auth, async (req, res) => {
   try {
     const user_id = req.user.id;
