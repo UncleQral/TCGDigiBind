@@ -19,6 +19,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [image, setImage] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [pickCard, setPickCard] = useState("");
+  const [games, setGames] = useState([]);
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
@@ -28,6 +29,14 @@ export default function AddCardModal({ visible, onClose, binder }) {
       bottomSheetRef.current?.close();
     }
   }, [visible]);
+
+  useEffect(() => {
+    const loadGames = async () => {
+      const data = await api.get("/game");
+      setGames(data);
+    };
+    loadGames();
+  }, []);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -55,15 +64,21 @@ export default function AddCardModal({ visible, onClose, binder }) {
   };
 
   const searchCard = async () => {
+    console.log("Game loaded: ", games);
+    console.log("Binder game:", binder?.game);
+
     try {
       const params = new URLSearchParams();
+      const gameObj = games.find((g) => g.name === binder?.game);
+      console.log("GameObj found:", gameObj);
+      if (gameObj) params.append("game_id", gameObj.id);
       if (cardName) params.append("name", cardName);
-      if (binder?.game) params.append("game", binder.game);
       //if (binder?.binder_set) params.append("expansion_id", binder.binder_set);
 
       console.log("Search params: ", params.toString());
       const data = await api.get(`/card/search?${params.toString()}`);
       console.log("Search results: ", data);
+
       setSearchResults(data);
     } catch (err) {
       console.log("searchCard error:", err);

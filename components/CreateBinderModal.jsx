@@ -3,6 +3,7 @@ import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -17,18 +18,32 @@ import { api } from "../utils/api";
 
 export default function BinderCreationModal({ visible, onClose }) {
   const [binderName, setBinderName] = useState("");
-  const [binderGame, setBinderGame] = useState("");
-  const [binderSet, setBinderSet] = useState("");
+  const [binderGameId, setBinderGameId] = useState(null);
+  const [binderSetId, setBinderSetId] = useState(null);
   const [binderPic, setBinderPic] = useState(null);
+  const [games, setGames] = useState([]);
+  const [expansions, setExpansions] = useState([]);
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
     if (visible) {
       bottomSheetRef.current?.snapToIndex(0);
+      api.get("/game").then((data) => setGames(data)).catch(() => {});
     } else {
       bottomSheetRef.current?.close();
     }
   }, [visible]);
+
+  useEffect(() => {
+    if (binderGameId && binderGameId !== "other") {
+      api.get(`/expansion/${binderGameId}`)
+        .then((data) => setExpansions(data))
+        .catch(() => setExpansions([]));
+    } else {
+      setExpansions([]);
+    }
+    setBinderSetId(null);
+  }, [binderGameId]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -59,10 +74,13 @@ export default function BinderCreationModal({ visible, onClose }) {
     console.log("Data: ", { binderName, binderGame, binderSet, binderPic });
     console.log("Sending:", { binderName, binderGame, binderSet, binderPic });
     try {
+      const selectedGame = games.find((g) => g.id === binderGameId);
+      const selectedSet = expansions.find((e) => e.id === binderSetId);
+
       const data = await api.post("/binder", {
         name: binderName,
-        game: binderGame,
-        binder_set: binderSet,
+        game: binderGameId === "other" ? "Other" : selectedGame?.name ?? null,
+        binder_set: binderSetId === "other" ? "Other" : selectedSet?.name ?? null,
         image_url: binderPic,
       });
       console.log("Response: ", data);
@@ -113,21 +131,36 @@ export default function BinderCreationModal({ visible, onClose }) {
               onChangeText={setBinderName}
             />
 
-            <BottomSheetTextInput
-              style={styles.input}
-              placeholder="Select Game..."
-              placeholderTextColor="#9CA3AF"
-              value={binderGame}
-              onChangeText={setBinderGame}
-            />
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={binderGameId}
+                onValueChange={(val) => setBinderGameId(val)}
+                style={styles.picker}
+                dropdownIconColor="#9CA3AF"
+              >
+                <Picker.Item label="Select Game..." value={null} color="#9CA3AF" />
+                {games.map((g) => (
+                  <Picker.Item key={g.id} label={g.name} value={g.id} color="#FFFFFF" />
+                ))}
+                <Picker.Item label="Other" value="other" color="#FFFFFF" />
+              </Picker>
+            </View>
 
-            <BottomSheetTextInput
-              style={styles.input}
-              placeholder="Select Set..."
-              placeholderTextColor="#9CA3AF"
-              value={binderSet}
-              onChangeText={setBinderSet}
-            />
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={binderSetId}
+                onValueChange={(val) => setBinderSetId(val)}
+                style={styles.picker}
+                dropdownIconColor="#9CA3AF"
+                enabled={!!binderGameId}
+              >
+                <Picker.Item label="Select Set..." value={null} color="#9CA3AF" />
+                {expansions.map((e) => (
+                  <Picker.Item key={e.id} label={e.name} value={e.id} color="#FFFFFF" />
+                ))}
+                <Picker.Item label="Other" value="other" color="#FFFFFF" />
+              </Picker>
+            </View>
           </View>
         </View>
 
@@ -177,6 +210,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
+    color: "#FFFFFF",
+  },
+  pickerWrapper: {
+    backgroundColor: "#1A1A1A",
+    borderWidth: 0.5,
+    borderColor: "#444",
+    borderRadius: 8,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+  picker: {
     color: "#FFFFFF",
   },
 });
