@@ -24,7 +24,7 @@ router.get("/search", auth, async (req, res) => {
 
     let sql = `SELECT c.*, e.name AS expansion_name, e.game_id
                FROM card c
-               JOIN expansion e ON c.expansion_id = e.expansion_id
+               JOIN expansion e ON c.expansion_id = e.id
                WHERE 1=1`;
     const params = [];
 
