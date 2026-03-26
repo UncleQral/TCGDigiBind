@@ -147,7 +147,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
               value={cardName}
               onChangeText={(text) => {
                 setCardName(text);
-                searchCard();
+                if (text.length >= 2) searchCard();
               }}
             />
           </View>
