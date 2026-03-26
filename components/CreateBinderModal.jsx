@@ -3,7 +3,6 @@ import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -15,6 +14,7 @@ import {
     View,
 } from "react-native";
 import { api } from "../utils/api";
+import SelectModal from "./SelectModal";
 
 export default function BinderCreationModal({ visible, onClose }) {
   const [binderName, setBinderName] = useState("");
@@ -28,7 +28,10 @@ export default function BinderCreationModal({ visible, onClose }) {
   useEffect(() => {
     if (visible) {
       bottomSheetRef.current?.snapToIndex(0);
-      api.get("/game").then((data) => setGames(data)).catch(() => {});
+      api
+        .get("/game")
+        .then((data) => setGames(data))
+        .catch(() => {});
     } else {
       bottomSheetRef.current?.close();
     }
@@ -36,7 +39,8 @@ export default function BinderCreationModal({ visible, onClose }) {
 
   useEffect(() => {
     if (binderGameId && binderGameId !== "other") {
-      api.get(`/expansion/${binderGameId}`)
+      api
+        .get(`/expansion/${binderGameId}`)
         .then((data) => setExpansions(data))
         .catch(() => setExpansions([]));
     } else {
@@ -78,12 +82,17 @@ export default function BinderCreationModal({ visible, onClose }) {
 
       const data = await api.post("/binder", {
         name: binderName,
-        game: binderGameId === "other" ? "Other" : selectedGame?.name ?? null,
-        binder_set: binderSetId === "other" ? "Other" : selectedSet?.name ?? null,
+        game: binderGameId === "other" ? "Other" : (selectedGame?.name ?? null),
+        binder_set:
+          binderSetId === "other" ? "Other" : (selectedSet?.name ?? null),
         image_url: binderPic,
       });
       console.log("Response: ", data);
       onClose();
+      setBinderName("");
+      setBinderGameId(null);
+      setBinderSetId(null);
+      setBinderPic(null);
     } catch (err) {
       console.log("Binder Creation error: ", err);
       console.log("Error details: ", JSON.stringify(err));
@@ -130,36 +139,26 @@ export default function BinderCreationModal({ visible, onClose }) {
               onChangeText={setBinderName}
             />
 
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={binderGameId}
-                onValueChange={(val) => setBinderGameId(val)}
-                style={styles.picker}
-                dropdownIconColor="#9CA3AF"
-              >
-                <Picker.Item label="Select Game..." value={null} color="#9CA3AF" />
-                {games.map((g) => (
-                  <Picker.Item key={g.id} label={g.name} value={g.id} color="#FFFFFF" />
-                ))}
-                <Picker.Item label="Other" value="other" color="#FFFFFF" />
-              </Picker>
-            </View>
+            <SelectModal
+              label="Select Game..."
+              value={binderGameId}
+              options={[
+                ...games.map((g) => ({ label: g.name, value: g.id })),
+                { label: "Other", value: "other" },
+              ]}
+              onSelect={(val) => setBinderGameId(val)}
+            />
 
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={binderSetId}
-                onValueChange={(val) => setBinderSetId(val)}
-                style={styles.picker}
-                dropdownIconColor="#9CA3AF"
-                enabled={!!binderGameId}
-              >
-                <Picker.Item label="Select Set..." value={null} color="#9CA3AF" />
-                {expansions.map((e) => (
-                  <Picker.Item key={e.id} label={e.name} value={e.id} color="#FFFFFF" />
-                ))}
-                <Picker.Item label="Other" value="other" color="#FFFFFF" />
-              </Picker>
-            </View>
+            <SelectModal
+              label="Select Set..."
+              value={binderSetId}
+              options={[
+                ...expansions.map((e) => ({ label: e.name, value: e.id })),
+                { label: "Other", value: "other" },
+              ]}
+              onSelect={(val) => setBinderSetId(val)}
+              enabled={!!binderGameId}
+            />
           </View>
         </View>
 

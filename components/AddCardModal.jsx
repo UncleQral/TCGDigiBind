@@ -95,6 +95,10 @@ export default function AddCardModal({ visible, onClose, binder }) {
         status: "owned",
       });
       onClose();
+      setCardName("");
+      setImage(null);
+      setSearchResults([]);
+      setPickCard("");
     } catch (err) {
       console.log("handleAddCard error:", err);
     }
