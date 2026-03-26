@@ -20,9 +20,9 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/search", auth, async (req, res) => {
   try {
-    const { name, game, expansion_id } = req.query;
+    const { name, game_id, expansion_id } = req.query;
 
-    let sql = `SELECT c.*, e.name AS expansion_name, e.game
+    let sql = `SELECT c.*, e.name AS expansion_name, e.game_id
                FROM card c
                JOIN expansion e ON c.expansion_id = e.expansion_id
                WHERE 1=1`;
@@ -33,9 +33,9 @@ router.get("/search", auth, async (req, res) => {
       params.push(`%${name}%`);
     }
 
-    if (game) {
-      sql += " AND e.game = ?";
-      params.push(game);
+    if (game_id) {
+      sql += " AND e.game_id = ?";
+      params.push(game_id);
     }
 
     if (expansion_id) {

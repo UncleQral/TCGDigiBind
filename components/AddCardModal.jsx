@@ -59,7 +59,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
       const params = new URLSearchParams();
       if (cardName) params.append("name", cardName);
       if (binder?.game) params.append("game", binder.game);
-      if (binder?.binder_set) params.append("expansion_id", binder.binder_set);
+      //if (binder?.binder_set) params.append("expansion_id", binder.binder_set);
 
       console.log("Search params: ", params.toString());
       const data = await api.get(`/card/search?${params.toString()}`);
