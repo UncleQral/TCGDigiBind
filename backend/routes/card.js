@@ -18,6 +18,40 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+router.get("/search", auth, async (req, res) => {
+  try {
+    const { name, game, expansion_id } = req.query;
+
+    let sql = `SELECT c.*, e.name AS expansion_name, e.game
+               FROM card c
+               JOIN expansion e ON c.expansion_id = e.expansion_id
+               WHERE 1=1`;
+    const params = [];
+
+    if (name) {
+      sql += " AND c.name LIKE ?";
+      params.push(`%${name}%`);
+    }
+
+    if (game) {
+      sql += " AND e.game = ?";
+      params.push(game);
+    }
+
+    if (expansion_id) {
+      sql += " AND c.expansion_id = ?";
+      params.push(expansion_id);
+    }
+
+    sql += " LIMIT 50";
+
+    const results = await query(sql, params);
+    res.json(results);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 router.post("/", auth, async (req, res) => {
   try {
     const { name, expansion_id, rarity_id, cardmarket_id } = req.body;

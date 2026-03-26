@@ -10,7 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import api from "../../../utils/api";
+import AddCardModal from "../../../components/AddCardModal";
+import { api } from "../../../utils/api";
 
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -21,6 +22,7 @@ export default function BinderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cards");
   const [filterActive, setFilterActive] = useState(false);
+  const [showAddCard, setShowAddCard] = useState(false);
 
   const router = useRouter();
 
@@ -28,8 +30,10 @@ export default function BinderDetailScreen() {
     try {
       const data = await api.get(`/binder/${id}`);
       setBinder(data);
+      setLoading(false);
     } catch (err) {
       console.log("getBinder error: ", err);
+      setLoading(false);
     }
   };
 
@@ -37,6 +41,7 @@ export default function BinderDetailScreen() {
     try {
       const data = await api.get(`/binder_card?binder_id=${id}`);
       setCards(data);
+      console.log(data);
     } catch (err) {
       console.log("getCards error:", err);
     }
@@ -70,15 +75,14 @@ export default function BinderDetailScreen() {
 
         <View style={styles.binderInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{binder?.name}</Text>
-
-            <Text style={styles.value}> 0,00€</Text>
-          </View>
-
-          <View style={styles.binderTags}>
-            <Text style={styles.game}>{binder?.game}</Text>
-
-            <Text style={styles.set}>{binder?.binder_set}</Text>
+            <View style={styles.nameAndTags}>
+              <Text style={styles.name}>{binder?.name}</Text>
+              <View style={styles.binderTags}>
+                <Text style={styles.game}>{binder?.game}</Text>
+                <Text style={styles.set}>{binder?.binder_set}</Text>
+              </View>
+            </View>
+            <Text style={styles.value}>0,00€</Text>
           </View>
         </View>
 
@@ -144,12 +148,22 @@ export default function BinderDetailScreen() {
         {activeTab === "cards" ? (
           <FlatList
             data={cards}
+            numColumns={4}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <View>
-                <Text style={{ color: "#fff" }}>{item.card_id}</Text>
+              <View style={styles.cardItem}>
+                <Text style={{ color: "#fff", fontSize: 10 }}>
+                  {item.card_id}
+                </Text>
               </View>
             )}
+            ListEmptyComponent={
+              <Text
+                style={{ color: "#9CA3AF", textAlign: "center", marginTop: 20 }}
+              >
+                Binder is empty.
+              </Text>
+            }
           />
         ) : (
           <Text style={{ color: "#fff" }}>Price Stats coming soon...</Text>
@@ -157,10 +171,21 @@ export default function BinderDetailScreen() {
       </View>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.addBtn}>
-          <Text>+</Text>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => setShowAddCard(true)}
+        >
+          <Text style={styles.addBtnText}>+</Text>
         </TouchableOpacity>
       </View>
+      <AddCardModal
+        visible={showAddCard}
+        onClose={() => {
+          setShowAddCard(false);
+          getCards();
+        }}
+        binder={binder}
+      />
     </View>
   );
 }
@@ -183,10 +208,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
   },
+  nameAndTags: { flex: 1 },
   name: { color: "#FFFFFF", fontSize: 16, fontWeight: "500" },
-  value: { color: "#ffc300", fontSize: 16, fontWeight: "500" },
+  value: { color: "#ffc300", fontSize: 20, fontWeight: "500" },
   binderTags: { flexDirection: "row", gap: 6 },
   game: {
     color: "#ffc300",

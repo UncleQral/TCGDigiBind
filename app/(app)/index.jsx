@@ -13,6 +13,7 @@ import BinderEntity from "../../components/BinderCard";
 import CreateBinderModal from "../../components/CreateBinderModal";
 import { api } from "../../utils/api";
 
+
 export default function Homescreen() {
   const [binders, setBinders] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
