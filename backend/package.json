@@ -19,6 +19,8 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.19.1",
     "node-cron": "^4.2.1",
-    "puppeteer": "^24.39.1"
+    "puppeteer": "^24.39.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
