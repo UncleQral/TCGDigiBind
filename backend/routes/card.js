@@ -22,9 +22,11 @@ router.get("/search", auth, async (req, res) => {
   try {
     const { name, game_id, expansion_id } = req.query;
 
-    let sql = `SELECT c.*, e.name AS expansion_name, e.game_id
+    let sql = `SELECT c.*, e.name AS expansion_name, e.game_id, e.cm_expansion_id,
+                      cp.avg_sell, cp.trend_price, cp.avg1, cp.avg7, cp.avg30, cp.foil_sell
                FROM card c
                JOIN expansion e ON c.expansion_id = e.id
+               LEFT JOIN card_price cp ON cp.card_id = c.id
                WHERE 1=1`;
     const params = [];
 
@@ -54,10 +56,10 @@ router.get("/search", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   try {
-    const { name, expansion_id, rarity_id, cardmarket_id } = req.body;
+    const { name, expansion_id, cardmarket_id } = req.body;
     const results = await query(
-      "INSERT INTO card (name, expansion_id, rarity_id, cardmarket_id) VALUES (?, ?, ?, ?)",
-      [name, expansion_id, rarity_id, cardmarket_id],
+      "INSERT INTO card (name, expansion_id, cardmarket_id) VALUES (?, ?, ?)",
+      [name, expansion_id, cardmarket_id],
     );
     res.json(results);
   } catch (err) {
@@ -82,10 +84,10 @@ router.delete("/:id", auth, async (req, res) => {
 router.put("/:card_id", auth, async (req, res) => {
   try {
     const card_id = req.params.card_id;
-    const { name, expansion_id, rarity_id, cardmarket_id } = req.body;
+    const { name, expansion_id, cardmarket_id } = req.body;
     const results = await query(
-      "UPDATE card SET name = ?, expansion_id = ?, rarity_id = ?, cardmarket_id = ? WHERE card_id = ?",
-      [name, expansion_id, rarity_id, cardmarket_id, card_id],
+      "UPDATE card SET name = ?, expansion_id = ?, cardmarket_id = ? WHERE card_id = ?",
+      [name, expansion_id, cardmarket_id, card_id],
     );
     res.json(results);
   } catch (err) {
