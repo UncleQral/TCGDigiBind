@@ -163,83 +163,80 @@ export default function AddCardModal({ visible, onClose, binder }) {
       keyboardBehavior="interactive"
     >
       <BottomSheetView style={styles.container}>
-        {/* Photo + Inputs side by side */}
-        <View style={styles.topRow}>
-          {/* Photo left */}
-          <View style={styles.imageContainer}>
-            <TouchableOpacity
-              style={styles.imagePlaceholder}
-              onPress={pickImage}
-            >
-              {image ? (
-                <Image source={{ uri: image }} style={styles.cardImage} />
-              ) : (
-                <Text
-                  style={{
-                    color: "#9CA3AF",
-                    fontSize: 11,
-                    textAlign: "center",
-                  }}
+        <BottomSheetFlatList
+          data={searchResults}
+          keyExtractor={(item) => item.card_id.toString()}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          ListHeaderComponent={
+            <View style={styles.topRow}>
+              {/* Photo left */}
+              <View style={styles.imageContainer}>
+                <TouchableOpacity
+                  style={styles.imagePlaceholder}
+                  onPress={pickImage}
                 >
-                  Galery
-                </Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto}>
-              <Text
-                style={{ color: "#ff7b00", fontSize: 11, textAlign: "center" }}
-              >
-                Camera
-              </Text>
-            </TouchableOpacity>
-          </View>
+                  {image ? (
+                    <Image source={{ uri: image }} style={styles.cardImage} />
+                  ) : (
+                    <Text
+                      style={{
+                        color: "#9CA3AF",
+                        fontSize: 11,
+                        textAlign: "center",
+                      }}
+                    >
+                      Galery
+                    </Text>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto}>
+                  <Text
+                    style={{ color: "#ff7b00", fontSize: 11, textAlign: "center" }}
+                  >
+                    Camera
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* Inputs rechts */}
-          <View style={styles.inputContainer}>
-            <View style={styles.readOnlyField}>
-              <Text style={styles.readOnlyLabel}>Game</Text>
-              <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
+              {/* Inputs rechts */}
+              <View style={styles.inputContainer}>
+                <View style={styles.readOnlyField}>
+                  <Text style={styles.readOnlyLabel}>Game</Text>
+                  <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
+                </View>
+
+                <View style={styles.readOnlyField}>
+                  <Text style={styles.readOnlyLabel}>Set</Text>
+                  <Text style={styles.readOnlyValue}>
+                    {binder?.binder_set || "-"}
+                  </Text>
+                </View>
+
+                <SelectModal
+                  label="Select Rarity..."
+                  value={selectedRarity}
+                  options={rarities.map((r) => ({ label: r.name, value: r.id }))}
+                  onSelect={(val) => {
+                    setSelectedRarity(val);
+                    const rarityObj = rarities.find((r) => r.id === val);
+                    setSelectedRarityObj(rarityObj);
+                  }}
+                />
+
+                <BottomSheetTextInput
+                  style={styles.input}
+                  placeholder="Cardname..."
+                  placeholderTextColor="#9CA3AF"
+                  value={cardName}
+                  onChangeText={(text) => {
+                    setCardName(text);
+                    searchCard(text);
+                  }}
+                />
+              </View>
             </View>
-
-            <View style={styles.readOnlyField}>
-              <Text style={styles.readOnlyLabel}>Set</Text>
-              <Text style={styles.readOnlyValue}>
-                {binder?.binder_set || "-"}
-              </Text>
-            </View>
-
-            <SelectModal
-              label="Select Rarity..."
-              value={selectedRarity}
-              options={rarities.map((r) => ({ label: r.name, value: r.id }))}
-              onSelect={(val) => {
-                setSelectedRarity(val);
-                const rarityObj = rarities.find((r) => r.id === val);
-                setSelectedRarityObj(rarityObj);
-              }}
-            />
-
-            <BottomSheetTextInput
-              style={styles.input}
-              placeholder="Cardname..."
-              placeholderTextColor="#9CA3AF"
-              value={cardName}
-              onChangeText={(text) => {
-                setCardName(text);
-                searchCard(text);
-              }}
-            />
-          </View>
-        </View>
-      </BottomSheetView>
-
-      {/* Suchergebnisse */}
-      <BottomSheetFlatList
-        data={searchResults}
-        keyExtractor={(item) => item.card_id.toString()}
-        style={styles.resultsList}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        renderItem={({ item }) => (
+          }
+          renderItem={({ item }) => (
           <View
             style={[
               styles.resultItem,
@@ -304,16 +301,17 @@ export default function AddCardModal({ visible, onClose, binder }) {
             {cardName ? "No Card found" : "Cardname..."}
           </Text>
         }
-        ListFooterComponent={
-          <TouchableOpacity
-            style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
-            onPress={handleAddCard}
-            disabled={!pickCard}
-          >
-            <Text style={styles.addBtnText}>Insert Card</Text>
-          </TouchableOpacity>
-        }
-      />
+        />
+
+        {/* Add Button */}
+        <TouchableOpacity
+          style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
+          onPress={handleAddCard}
+          disabled={!pickCard}
+        >
+          <Text style={styles.addBtnText}>Insert Card</Text>
+        </TouchableOpacity>
+      </BottomSheetView>
     </BottomSheet>
   );
 }
