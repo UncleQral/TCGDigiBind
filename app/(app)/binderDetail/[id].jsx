@@ -2,13 +2,13 @@ import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import AddCardModal from "../../../components/AddCardModal";
 import { api } from "../../../utils/api";
@@ -173,7 +173,11 @@ export default function BinderDetailScreen() {
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.addBtn}
-          onPress={() => setShowAddCard(true)}
+          onPress={() => {
+            console.log("Button pressed, showAddCard:", showAddCard);
+            setShowAddCard(true);
+            console.log("After set, showAddCard:", showAddCard);
+          }}
         >
           <Text style={styles.addBtnText}>+</Text>
         </TouchableOpacity>
