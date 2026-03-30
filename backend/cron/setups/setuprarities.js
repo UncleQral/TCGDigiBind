@@ -44,7 +44,7 @@ const setupRarities = async (page, game) => {
   await page.goto(game.cm_url);
   await new Promise((resolve) => setTimeout(resolve, 2000));
   await page.waitForSelector(".d-grid button");
-  await page.click(".d-grid button");
+  await page.$eval(".d-grid button", (btn) => btn.click());
   await page.waitForSelector('select[name="idRarity"]');
 
   const rarities = await page.evaluate(() => {
@@ -97,6 +97,6 @@ nodecron.schedule("0 7 1 * *", async () => {
   await runRaritySetup();
 });
 
-runRaritySetup();
+//runRaritySetup();
 
 module.exports = { runRaritySetup };
