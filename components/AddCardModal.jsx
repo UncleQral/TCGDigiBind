@@ -26,6 +26,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [rarities, setRarities] = useState([]);
   const [selectedRarity, setSelectedRarity] = useState(null);
   const [selectedRarityObj, setSelectedRarityObj] = useState(null);
+  const [binderExpansion, setBinderExpansion] = useState(null);
 
   useEffect(() => {
     if (visible) {
@@ -52,6 +53,18 @@ export default function AddCardModal({ visible, onClose, binder }) {
       setRarities(data);
     };
     loadRarities();
+  }, [games, binder]);
+
+  useEffect(() => {
+    const loadBinderExpansion = async () => {
+      if (!binder?.binder_set || !binder?.game) return;
+      const gameObj = games.find((g) => g.name === binder.game);
+      if (!gameObj) return;
+      const data = await api.get(`/expansion/${gameObj.id}`);
+      const match = data.find((e) => e.name === binder.binder_set);
+      setBinderExpansion(match || null);
+    };
+    loadBinderExpansion();
   }, [games, binder]);
 
   const pickImage = async () => {
@@ -122,7 +135,11 @@ export default function AddCardModal({ visible, onClose, binder }) {
     const gameObj = games.find((g) => g.name === binder?.game);
     const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
 
-    let url = `https://www.cardmarket.com/en/${gameName}/Products/Singles?idExpansion=${item.cm_expansion_id}&searchString=${encodeURIComponent(cardName)}`;
+    const expansionId = binder?.binder_set && binderExpansion
+      ? binderExpansion.cm_expansion_id
+      : item.cm_expansion_id;
+
+    let url = `https://www.cardmarket.com/en/${gameName}/Products/Singles?idExpansion=${expansionId}&searchString=${encodeURIComponent(cardName)}`;
 
     if (selectedRarityObj?.cm_rarity_id) {
       url += `&idRarity=${selectedRarityObj.cm_rarity_id}`;
