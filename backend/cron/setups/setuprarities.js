@@ -42,7 +42,7 @@ const setupRarities = async (page, game) => {
   console.log(`Fetching ${game.name} rarities...`);
 
   await page.goto(game.cm_url);
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 3000));
   await page.waitForSelector(".d-grid button");
   await page.$eval(".d-grid button", (btn) => btn.click());
   await page.waitForSelector('select[name="idRarity"]');
@@ -51,15 +51,18 @@ const setupRarities = async (page, game) => {
     const options = document.querySelectorAll('select[name="idRarity"] option');
     return Array.from(options)
       .filter((o) => o.value !== "0")
-      .map((o) => ({ id: o.value, name: o.textContent.trim() }));
+      .map((o) => ({
+        cm_rarity_id: parseInt(o.value),
+        name: o.textContent.trim(),
+      }));
   });
 
   for (const rarity of rarities) {
     await query(
-      `INSERT INTO rarity (game_id, name) 
-       VALUES (?, ?) 
-       ON DUPLICATE KEY UPDATE name = VALUES(name)`,
-      [game.game_id, rarity.name],
+      `INSERT INTO rarity (game_id, name, cm_rarity_id)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE name = VALUES(name), cm_rarity_id = VALUES(cm_rarity_id)`,
+      [game.game_id, rarity.name, rarity.cm_rarity_id],
     );
   }
 
