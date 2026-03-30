@@ -7,13 +7,15 @@ import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Image,
+  Linking,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { api } from "../utils/api";
 import SelectModal from "./SelectModal";
+
 
 export default function AddCardModal({ visible, onClose, binder }) {
   const [cardName, setCardName] = useState("");
@@ -24,6 +26,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const bottomSheetRef = useRef(null);
   const [rarities, setRarities] = useState([]);
   const [selectedRarity, setSelectedRarity] = useState(null);
+  const [selectedRarityObj, setSelectedRarityObj] = useState(null);
 
   useEffect(() => {
     if (visible) {
@@ -118,6 +121,20 @@ export default function AddCardModal({ visible, onClose, binder }) {
     }
   };
 
+  const getCardmarketUrl = (item) => {
+    const cardName = item.name.split("[")[0].trim();
+    const gameObj = games.find((g) => g.name === binder?.game);
+    const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
+
+    let url = `https://www.cardmarket.com/en/${gameName}/Products/Singles?idExpansion=${item.cm_expansion_id}&searchString=${encodeURIComponent(cardName)}`;
+
+    if (selectedRarityObj?.cm_rarity_id) {
+      url += `&idRarity=${selectedRarityObj.cm_rarity_id}`;
+    }
+
+    return url;
+  };
+
   return (
     <BottomSheet
       ref={bottomSheetRef}
@@ -179,7 +196,11 @@ export default function AddCardModal({ visible, onClose, binder }) {
               label="Select Rarity..."
               value={selectedRarity}
               options={rarities.map((r) => ({ label: r.name, value: r.id }))}
-              onSelect={(val) => setSelectedRarity(val)}
+              onSelect={(val) => {
+                setSelectedRarity(val);
+                const rarityObj = rarities.find((r) => r.id === val);
+                setSelectedRarityObj(rarityObj);
+              }}
             />
 
             <BottomSheetTextInput
@@ -201,16 +222,62 @@ export default function AddCardModal({ visible, onClose, binder }) {
           keyExtractor={(item) => item.card_id.toString()}
           style={styles.resultsList}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <View
               style={[
                 styles.resultItem,
                 pickCard === item.card_id && styles.resultItemSelected,
               ]}
-              onPress={() => setPickCard(item.card_id)}
             >
-              <Text style={styles.resultName}>{item.name}</Text>
-              <Text style={styles.resultSet}>{item.expansion_name}</Text>
-            </TouchableOpacity>
+              <View style={styles.resultHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.resultName}>{item.name}</Text>
+                  <Text style={styles.resultSet}>{item.expansion_name}</Text>
+                </View>
+                <Text style={styles.resultPrice}>
+                  € {item.trend_price ?? "-"}
+                </Text>
+              </View>
+
+              <View style={styles.priceRow}>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>1 Tag</Text>
+                  <Text style={styles.priceValue}>€ {item.avg1 ?? "-"}</Text>
+                </View>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>7 Tage</Text>
+                  <Text style={styles.priceValue}>€ {item.avg7 ?? "-"}</Text>
+                </View>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>30 Tage</Text>
+                  <Text style={styles.priceValue}>€ {item.avg30 ?? "-"}</Text>
+                </View>
+              </View>
+
+              <View style={styles.resultActions}>
+                <TouchableOpacity
+                  style={styles.cmBtn}
+                  onPress={() => Linking.openURL(getCardmarketUrl(item))}
+                >
+                  <Text style={styles.cmBtnText}>Auf CM ansehen ↗</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.selectBtn,
+                    pickCard === item.card_id && styles.selectBtnActive,
+                  ]}
+                  onPress={() => setPickCard(item.card_id)}
+                >
+                  <Text
+                    style={[
+                      styles.selectBtnText,
+                      pickCard === item.card_id && styles.selectBtnTextActive,
+                    ]}
+                  >
+                    {pickCard === item.card_id ? "✓ Ausgewählt" : "Wählen"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
           ListEmptyComponent={
             <Text
@@ -296,4 +363,70 @@ const styles = StyleSheet.create({
   },
   addBtnDisabled: { backgroundColor: "#555" },
   addBtnText: { color: "#fff", fontWeight: "500", fontSize: 15 },
+  resultHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  resultPrice: {
+    color: "#ffc300",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  priceRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 8,
+  },
+  priceBox: {
+    flex: 1,
+    backgroundColor: "#111",
+    borderRadius: 6,
+    padding: 6,
+    alignItems: "center",
+  },
+  priceLabel: {
+    color: "#9CA3AF",
+    fontSize: 10,
+  },
+  priceValue: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  resultActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  cmBtn: {
+    flex: 1,
+    backgroundColor: "#1A1A1A",
+    borderWidth: 0.5,
+    borderColor: "#444",
+    borderRadius: 6,
+    padding: 8,
+    alignItems: "center",
+  },
+  cmBtnText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+  },
+  selectBtn: {
+    flex: 1,
+    backgroundColor: "#333",
+    borderRadius: 6,
+    padding: 8,
+    alignItems: "center",
+  },
+  selectBtnActive: {
+    backgroundColor: "#ff7b00",
+  },
+  selectBtnText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+  },
+  selectBtnTextActive: {
+    color: "#000",
+    fontWeight: "500",
+  },
 });
