@@ -45,6 +45,8 @@ app.use("/grading_company", gradingCompanyRouter);
 require("./cron/priceupdater.js");
 require("./cron/setups/setupsets.js");
 require("./cron/setups/setuprarities.js");
+require("./cron/downloadproducts.js");
+require("./cron/importcards.js");
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Connection Succsessfully");
