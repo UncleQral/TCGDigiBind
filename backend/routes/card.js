@@ -26,7 +26,7 @@ router.get("/search", auth, async (req, res) => {
                       cp.avg_sell, cp.trend_price, cp.avg1, cp.avg7, cp.avg30, cp.foil_sell
                FROM card c
                JOIN expansion e ON c.expansion_id = e.id
-               LEFT JOIN card_price cp ON cp.card_id = c.id
+               LEFT JOIN card_price cp ON cp.card_id = c.card_id
                WHERE 1=1`;
     const params = [];
 

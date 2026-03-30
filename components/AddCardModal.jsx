@@ -11,11 +11,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { api } from "../utils/api";
 import SelectModal from "./SelectModal";
-
 
 export default function AddCardModal({ visible, onClose, binder }) {
   const [cardName, setCardName] = useState("");
@@ -80,22 +79,19 @@ export default function AddCardModal({ visible, onClose, binder }) {
     }
   };
 
-  const searchCard = async () => {
-    console.log("Game loaded: ", games);
-    console.log("Binder game:", binder?.game);
-
+  const searchCard = async (searchText) => {
     try {
       const params = new URLSearchParams();
       const gameObj = games.find((g) => g.name === binder?.game);
-      console.log("GameObj found:", gameObj);
+      console.log("searchText:", searchText);
+      console.log("gameObj:", gameObj);
+      console.log("binder.game:", binder?.game);
       if (gameObj) params.append("game_id", gameObj.id);
-      if (cardName) params.append("name", cardName);
-      //if (binder?.binder_set) params.append("expansion_id", binder.binder_set);
+      if (searchText) params.append("name", searchText);
 
-      console.log("Search params: ", params.toString());
+      console.log("URL:", `/card/search?${params.toString()}`);
       const data = await api.get(`/card/search?${params.toString()}`);
-      console.log("Search results: ", data);
-
+      console.log("Results:", data);
       setSearchResults(data);
     } catch (err) {
       console.log("searchCard error:", err);
@@ -210,7 +206,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
               value={cardName}
               onChangeText={(text) => {
                 setCardName(text);
-                if (text.length >= 2) searchCard();
+                searchCard(text);
               }}
             />
           </View>
