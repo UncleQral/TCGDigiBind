@@ -4,9 +4,10 @@ const router = express.Router();
 
 router.get("/:game_id", async (req, res) => {
   try {
-    const rarities = await query("SELECT name FROM rarity WHERE game_id = ?", [
-      req.params.game_id,
-    ]);
+    const rarities = await query(
+      "SELECT id, name FROM rarity WHERE game_id = ?",
+      [req.params.game_id],
+    );
     res.json(rarities);
   } catch (err) {
     handleError(res, err);

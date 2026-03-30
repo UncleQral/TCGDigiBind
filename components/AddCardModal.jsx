@@ -1,18 +1,19 @@
 import BottomSheet, {
-    BottomSheetTextInput,
-    BottomSheetView,
+  BottomSheetTextInput,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { api } from "../utils/api";
+import SelectModal from "./SelectModal";
 
 export default function AddCardModal({ visible, onClose, binder }) {
   const [cardName, setCardName] = useState("");
@@ -21,6 +22,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [pickCard, setPickCard] = useState("");
   const [games, setGames] = useState([]);
   const bottomSheetRef = useRef(null);
+  const [rarities, setRarities] = useState([]);
+  const [selectedRarity, setSelectedRarity] = useState(null);
 
   useEffect(() => {
     if (visible) {
@@ -37,6 +40,17 @@ export default function AddCardModal({ visible, onClose, binder }) {
     };
     loadGames();
   }, []);
+
+  useEffect(() => {
+    const loadRarities = async () => {
+      if (!binder?.game) return;
+      const gameObj = games.find((g) => g.name === binder.game);
+      if (!gameObj) return;
+      const data = await api.get(`/rarity/${gameObj.id}`);
+      setRarities(data);
+    };
+    loadRarities();
+  }, [games, binder]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -153,12 +167,21 @@ export default function AddCardModal({ visible, onClose, binder }) {
               <Text style={styles.readOnlyLabel}>Game</Text>
               <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
             </View>
+
             <View style={styles.readOnlyField}>
               <Text style={styles.readOnlyLabel}>Set</Text>
               <Text style={styles.readOnlyValue}>
                 {binder?.binder_set || "-"}
               </Text>
             </View>
+
+            <SelectModal
+              label="Select Rarity..."
+              value={selectedRarity}
+              options={rarities.map((r) => ({ label: r.name, value: r.id }))}
+              onSelect={(val) => setSelectedRarity(val)}
+            />
+
             <BottomSheetTextInput
               style={styles.input}
               placeholder="Cardname..."
