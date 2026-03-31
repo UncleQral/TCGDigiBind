@@ -43,16 +43,24 @@ nodecron.schedule("0 5 * * *", async () => {
 const testRun = async () => {
   console.log("Test started...");
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-blink-features=AutomationControlled",
+      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    ],
+  });
   const page = await browser.newPage();
 
   await page.goto("https://www.cardmarket.com/en/Magic");
   await page.waitForSelector('[name="username"]');
 
-  console.log("Email: ", process.env.CM_EMAIL);
-  console.log("Email: ", process.env.CM_PASSWORD);
+  console.log("Username: ", process.env.CM_USERNAME);
+  console.log("Password: ", process.env.CM_PASSWORD);
 
-  await page.type('[name="username"]', process.env.CM_EMAIL);
+  await page.type('[name="username"]', process.env.CM_USERNAME);
   await page.type('[name="userPassword"]', process.env.CM_PASSWORD);
   await page.click('[type="submit"]');
 
@@ -81,8 +89,10 @@ const testRun = async () => {
 
 const processFiles = async () => {
   try {
-    const cardIds = await query("SELECT DISTINCT card_id FROM binder_card");
-    const relevantIds = new Set(cardIds.map((row) => row.card_id));
+    const cardRows = await query("SELECT card_id, cardmarket_id FROM card");
+    const cardmarketToId = new Map(
+      cardRows.map((row) => [row.cardmarket_id, row.card_id]),
+    );
 
     const files = fs.readdirSync(path.join(__dirname, "../downloads"));
 
@@ -93,40 +103,51 @@ const processFiles = async () => {
       );
       const data = JSON.parse(content);
 
+      const rows = [];
       for (const entry of data.priceGuides) {
-        if (relevantIds.has(entry.idProduct)) {
-          await query(
-            `INSERT INTO card_price (card_id, avg_sell, low_price, trend_price, avg1, avg7, avg30, foil_sell, foil_low, foil_trend, foil_avg1, foil_avg7, foil_avg30, date)
-                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        ON DUPLICATE KEY UPDATE
-                        avg_sell = VALUES(avg_sell), low_price = VALUES(low_price), trend_price = VALUES(trend_price),
-                        avg1 = VALUES(avg1), avg7 = VALUES(avg7), avg30 = VALUES(avg30),
-                        foil_sell = VALUES(foil_sell), foil_low = VALUES(foil_low), foil_trend = VALUES(foil_trend),
-                        foil_avg1 = VALUES(foil_avg1), foil_avg7 = VALUES(foil_avg7), foil_avg30 = VALUES(foil_avg30),
-                        date = VALUES(date)`,
-            [
-              entry.idProduct,
-              entry.avg,
-              entry.low,
-              entry.trend,
-              entry.avg1,
-              entry.avg7,
-              entry.avg30,
-              entry["avg-foil"],
-              entry["low-foil"],
-              entry["trend-foil"],
-              entry["avg1-foil"],
-              entry["avg7-foil"],
-              entry["avg30-foil"],
-              data.createdAt,
-            ],
-          );
+        const cardId = cardmarketToId.get(entry.idProduct);
+        if (cardId !== undefined) {
+          rows.push([
+            cardId,
+            entry.avg,
+            entry.low,
+            entry.trend,
+            entry.avg1,
+            entry.avg7,
+            entry.avg30,
+            entry["avg-foil"],
+            entry["low-foil"],
+            entry["trend-foil"],
+            entry["avg1-foil"],
+            entry["avg7-foil"],
+            entry["avg30-foil"],
+            data.createdAt,
+          ]);
         }
       }
+
+      for (let i = 0; i < rows.length; i += 1000) {
+        const chunk = rows.slice(i, i + 1000);
+        await query(
+          `INSERT INTO card_price (card_id, avg_sell, low_price, trend_price, avg1, avg7, avg30, foil_sell, foil_low, foil_trend, foil_avg1, foil_avg7, foil_avg30, date)
+           VALUES ?
+           ON DUPLICATE KEY UPDATE
+           avg_sell = VALUES(avg_sell), low_price = VALUES(low_price), trend_price = VALUES(trend_price),
+           avg1 = VALUES(avg1), avg7 = VALUES(avg7), avg30 = VALUES(avg30),
+           foil_sell = VALUES(foil_sell), foil_low = VALUES(foil_low), foil_trend = VALUES(foil_trend),
+           foil_avg1 = VALUES(foil_avg1), foil_avg7 = VALUES(foil_avg7), foil_avg30 = VALUES(foil_avg30),
+           date = VALUES(date)`,
+          [chunk],
+        );
+      }
+
       fs.unlinkSync(path.join(__dirname, "../downloads", file));
-      console.log(`${file} processed and deleted!`);
+      console.log(`${file}: ${rows.length} prices inserted!`);
     }
   } catch (err) {
     console.error("Price update error: ", err);
   }
 };
+
+//testRun();
+processFiles();

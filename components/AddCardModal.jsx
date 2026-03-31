@@ -105,23 +105,9 @@ export default function AddCardModal({ visible, onClose, binder }) {
 
       console.log("URL:", `/card/search?${params.toString()}`);
       const data = await api.get(`/card/search?${params.toString()}`);
-      console.log("binderExpansion:", binderExpansion);
-      console.log("first result cm_expansion_id:", data[0]?.cm_expansion_id);
       if (binderExpansion) {
-        const matched = data.filter(
-          (c) => c.cm_expansion_id === binderExpansion.cm_expansion_id,
-        );
-        const others = data.filter(
-          (c) => c.cm_expansion_id !== binderExpansion.cm_expansion_id,
-        );
         setSearchResults(
-          others.length > 0
-            ? [
-                ...matched,
-                { type: "separator", key: "sep", label: "Others" },
-                ...others,
-              ]
-            : matched,
+          data.filter((c) => c.cm_expansion_id === binderExpansion.cm_expansion_id),
         );
       } else {
         setSearchResults(data);
@@ -300,12 +286,6 @@ export default function AddCardModal({ visible, onClose, binder }) {
 
               <View style={styles.resultActions}>
                 <TouchableOpacity
-                  style={styles.cmBtn}
-                  onPress={() => Linking.openURL(getCardmarketUrl(item))}
-                >
-                  <Text style={styles.cmBtnText}>Auf CM ansehen ↗</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
                   style={[
                     styles.selectBtn,
                     pickCard === item.card_id && styles.selectBtnActive,
@@ -335,6 +315,37 @@ export default function AddCardModal({ visible, onClose, binder }) {
         ListFooterComponent={
           <View style={styles.footerBtn}>
             <TouchableOpacity
+              style={styles.cmFooterBtn}
+              onPress={() => {
+                const gameObj = games.find((g) => g.name === binder?.game);
+                const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
+                const expansionId = binderExpansion?.cm_expansion_id ?? "";
+                const rarityId = selectedRarityObj?.cm_rarity_id ?? "";
+                const name = encodeURIComponent(cardName.trim());
+                Linking.openURL(
+                  `https://www.cardmarket.com/en/${gameName}/Products/Singles?searchMode=v2&idCategory=51&idExpansion=${expansionId}&idRarity=${rarityId}&searchString=${name}`,
+                );
+              }}
+            >
+              <Text style={styles.cmFooterBtnText}>Check on Cardmarket ↗</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cmFooterBtn}
+              onPress={() => {
+                const gameObj = games.find((g) => g.name === binder?.game);
+                const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
+                const expansionId = binderExpansion?.cm_expansion_id ?? "";
+                const name = encodeURIComponent(cardName.trim());
+                Linking.openURL(
+                  `https://www.cardmarket.com/en/${gameName}/Products/Singles?searchMode=v2&idCategory=51&idExpansion=${expansionId}&searchString=${name}`,
+                );
+              }}
+            >
+              <Text style={styles.cmFooterBtnText}>Check without Rarity ↗</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
               onPress={handleAddCard}
               disabled={!pickCard}
@@ -349,19 +360,16 @@ export default function AddCardModal({ visible, onClose, binder }) {
 }
 const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 12 },
-  separator: {
-    paddingVertical: 8,
-    marginBottom: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#444",
+  footerBtn: { paddingVertical: 12, gap: 8 },
+  cmFooterBtn: {
+    backgroundColor: "#1A1A1A",
+    borderRadius: 10,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 0.5,
+    borderColor: "#444",
   },
-  separatorText: {
-    color: "#9CA3AF",
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-  footerBtn: { paddingVertical: 12 },
+  cmFooterBtnText: { color: "#9CA3AF", fontSize: 13 },
   topRow: { flexDirection: "row", gap: 12, marginBottom: 16, paddingTop: 8 },
   imageContainer: { width: 90, gap: 8 },
   imagePlaceholder: {
@@ -457,19 +465,6 @@ const styles = StyleSheet.create({
   resultActions: {
     flexDirection: "row",
     gap: 8,
-  },
-  cmBtn: {
-    flex: 1,
-    backgroundColor: "#1A1A1A",
-    borderWidth: 0.5,
-    borderColor: "#444",
-    borderRadius: 6,
-    padding: 8,
-    alignItems: "center",
-  },
-  cmBtnText: {
-    color: "#9CA3AF",
-    fontSize: 12,
   },
   selectBtn: {
     flex: 1,
