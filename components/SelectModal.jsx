@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-    FlatList,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function SelectModal({
@@ -30,7 +30,10 @@ export default function SelectModal({
     <View style={styles.wrapper}>
       <TouchableOpacity
         style={[styles.trigger, !enabled && styles.triggerDisabled]}
-        onPress={() => enabled && setVisible(true)}
+        onPress={() => {
+          console.log("SelectModal trigger pressed, enabled:", enabled);
+          enabled && setVisible(true);
+        }}
         activeOpacity={0.7}
       >
         <Text style={[styles.triggerText, !value && styles.placeholder]}>
@@ -44,6 +47,7 @@ export default function SelectModal({
         transparent
         animationType="fade"
         statusBarTranslucent
+        style={{ zIndex: 9999 }}
       >
         <TouchableOpacity
           style={styles.overlay}

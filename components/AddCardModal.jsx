@@ -1,7 +1,6 @@
 import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetTextInput,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
@@ -106,8 +105,27 @@ export default function AddCardModal({ visible, onClose, binder }) {
 
       console.log("URL:", `/card/search?${params.toString()}`);
       const data = await api.get(`/card/search?${params.toString()}`);
-      console.log("Results:", data);
-      setSearchResults(data);
+      console.log("binderExpansion:", binderExpansion);
+      console.log("first result cm_expansion_id:", data[0]?.cm_expansion_id);
+      if (binderExpansion) {
+        const matched = data.filter(
+          (c) => c.cm_expansion_id === binderExpansion.cm_expansion_id,
+        );
+        const others = data.filter(
+          (c) => c.cm_expansion_id !== binderExpansion.cm_expansion_id,
+        );
+        setSearchResults(
+          others.length > 0
+            ? [
+                ...matched,
+                { type: "separator", key: "sep", label: "Others" },
+                ...others,
+              ]
+            : matched,
+        );
+      } else {
+        setSearchResults(data);
+      }
     } catch (err) {
       console.log("searchCard error:", err);
     }
@@ -136,164 +154,177 @@ export default function AddCardModal({ visible, onClose, binder }) {
     const cardName = item.name.split("[")[0].trim();
     const gameObj = games.find((g) => g.name === binder?.game);
     const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
-
+    const setName = item.expansion_name?.replace(/\s+/g, "-") || "";
     const expansionId =
       binder?.binder_set && binderExpansion
         ? binderExpansion.cm_expansion_id
         : item.cm_expansion_id;
+    const rarityId = selectedRarityObj?.cm_rarity_id ?? "";
 
-    let url = `https://www.cardmarket.com/en/${gameName}/Products/Singles?idExpansion=${expansionId}&searchString=${encodeURIComponent(cardName)}`;
-
-    if (selectedRarityObj?.cm_rarity_id) {
-      url += `&idRarity=${selectedRarityObj.cm_rarity_id}`;
-    }
-
-    return url;
+    return `https://www.cardmarket.com/en/${gameName}/Products/Singles/${setName}?searchMode=v2&idCategory=51&idExpansion=${expansionId}&idRarity=${rarityId}&searchString=${encodeURIComponent(cardName)}`;
   };
 
   return (
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
-      snapPoints={["50%"]}
+      snapPoints={["75%"]}
       onClose={onClose}
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
       keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
-      <BottomSheetView style={styles.container}>
-        <BottomSheetFlatList
-          data={searchResults}
-          keyExtractor={(item) => item.card_id.toString()}
-          contentContainerStyle={{ paddingBottom: 12 }}
-          ListHeaderComponent={
-            <View style={styles.topRow}>
-              {/* Photo left */}
-              <View style={styles.imageContainer}>
-                <TouchableOpacity
-                  style={styles.imagePlaceholder}
-                  onPress={pickImage}
-                >
-                  {image ? (
-                    <Image source={{ uri: image }} style={styles.cardImage} />
-                  ) : (
-                    <Text
-                      style={{
-                        color: "#9CA3AF",
-                        fontSize: 11,
-                        textAlign: "center",
-                      }}
-                    >
-                      Galery
-                    </Text>
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto}>
+      <BottomSheetFlatList
+        data={searchResults}
+        keyExtractor={(item) =>
+          item.type === "separator" ? item.key : item.card_id.toString()
+        }
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View style={styles.topRow}>
+            {/* Photo left */}
+            <View style={styles.imageContainer}>
+              <TouchableOpacity
+                style={styles.imagePlaceholder}
+                onPress={pickImage}
+              >
+                {image ? (
+                  <Image source={{ uri: image }} style={styles.cardImage} />
+                ) : (
                   <Text
-                    style={{ color: "#ff7b00", fontSize: 11, textAlign: "center" }}
+                    style={{
+                      color: "#9CA3AF",
+                      fontSize: 11,
+                      textAlign: "center",
+                    }}
                   >
-                    Camera
+                    Galery
                   </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Inputs rechts */}
-              <View style={styles.inputContainer}>
-                <View style={styles.readOnlyField}>
-                  <Text style={styles.readOnlyLabel}>Game</Text>
-                  <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
-                </View>
-
-                <View style={styles.readOnlyField}>
-                  <Text style={styles.readOnlyLabel}>Set</Text>
-                  <Text style={styles.readOnlyValue}>
-                    {binder?.binder_set || "-"}
-                  </Text>
-                </View>
-
-                <SelectModal
-                  label="Select Rarity..."
-                  value={selectedRarity}
-                  options={rarities.map((r) => ({ label: r.name, value: r.id }))}
-                  onSelect={(val) => {
-                    setSelectedRarity(val);
-                    const rarityObj = rarities.find((r) => r.id === val);
-                    setSelectedRarityObj(rarityObj);
-                  }}
-                />
-
-                <BottomSheetTextInput
-                  style={styles.input}
-                  placeholder="Cardname..."
-                  placeholderTextColor="#9CA3AF"
-                  value={cardName}
-                  onChangeText={(text) => {
-                    setCardName(text);
-                    searchCard(text);
-                  }}
-                />
-              </View>
-            </View>
-          }
-          renderItem={({ item }) => (
-          <View
-            style={[
-              styles.resultItem,
-              pickCard === item.card_id && styles.resultItemSelected,
-            ]}
-          >
-            <View style={styles.resultHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.resultName}>{item.name}</Text>
-                <Text style={styles.resultSet}>{item.expansion_name}</Text>
-              </View>
-              <Text style={styles.resultPrice}>
-                € {item.trend_price ?? "-"}
-              </Text>
-            </View>
-
-            <View style={styles.priceRow}>
-              <View style={styles.priceBox}>
-                <Text style={styles.priceLabel}>1 Tag</Text>
-                <Text style={styles.priceValue}>€ {item.avg1 ?? "-"}</Text>
-              </View>
-              <View style={styles.priceBox}>
-                <Text style={styles.priceLabel}>7 Tage</Text>
-                <Text style={styles.priceValue}>€ {item.avg7 ?? "-"}</Text>
-              </View>
-              <View style={styles.priceBox}>
-                <Text style={styles.priceLabel}>30 Tage</Text>
-                <Text style={styles.priceValue}>€ {item.avg30 ?? "-"}</Text>
-              </View>
-            </View>
-
-            <View style={styles.resultActions}>
-              <TouchableOpacity
-                style={styles.cmBtn}
-                onPress={() => Linking.openURL(getCardmarketUrl(item))}
-              >
-                <Text style={styles.cmBtnText}>Auf CM ansehen ↗</Text>
+                )}
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.selectBtn,
-                  pickCard === item.card_id && styles.selectBtnActive,
-                ]}
-                onPress={() => setPickCard(item.card_id)}
-              >
+              <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto}>
                 <Text
-                  style={[
-                    styles.selectBtnText,
-                    pickCard === item.card_id && styles.selectBtnTextActive,
-                  ]}
+                  style={{
+                    color: "#ff7b00",
+                    fontSize: 11,
+                    textAlign: "center",
+                  }}
                 >
-                  {pickCard === item.card_id ? "✓ Ausgewählt" : "Wählen"}
+                  Camera
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Inputs rechts */}
+            <View style={styles.inputContainer}>
+              <View style={styles.readOnlyField}>
+                <Text style={styles.readOnlyLabel}>Game</Text>
+                <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
+              </View>
+
+              <View style={styles.readOnlyField}>
+                <Text style={styles.readOnlyLabel}>Set</Text>
+                <Text style={styles.readOnlyValue}>
+                  {binder?.binder_set || "-"}
+                </Text>
+              </View>
+
+              <SelectModal
+                label="Select Rarity..."
+                value={selectedRarity}
+                options={rarities.map((r) => ({
+                  label: r.name,
+                  value: r.id,
+                }))}
+                onSelect={(val) => {
+                  setSelectedRarity(val);
+                  const rarityObj = rarities.find((r) => r.id === val);
+                  setSelectedRarityObj(rarityObj);
+                }}
+              />
+
+              <BottomSheetTextInput
+                style={styles.input}
+                placeholder="Cardname..."
+                placeholderTextColor="#9CA3AF"
+                value={cardName}
+                onChangeText={(text) => {
+                  setCardName(text);
+                  searchCard(text);
+                }}
+              />
+            </View>
           </View>
-        )}
+        }
+        renderItem={({ item }) => {
+          if (item.type === "separator") {
+            return (
+              <View style={styles.separator}>
+                <Text style={styles.separatorText}>{item.label}</Text>
+              </View>
+            );
+          }
+          return (
+            <View
+              style={[
+                styles.resultItem,
+                pickCard === item.card_id && styles.resultItemSelected,
+              ]}
+            >
+              <View style={styles.resultHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.resultName}>{item.name}</Text>
+                  <Text style={styles.resultSet}>{item.expansion_name}</Text>
+                </View>
+                <Text style={styles.resultPrice}>
+                  € {item.trend_price ?? "-"}
+                </Text>
+              </View>
+
+              <View style={styles.priceRow}>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>1 Tag</Text>
+                  <Text style={styles.priceValue}>€ {item.avg1 ?? "-"}</Text>
+                </View>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>7 Tage</Text>
+                  <Text style={styles.priceValue}>€ {item.avg7 ?? "-"}</Text>
+                </View>
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceLabel}>30 Tage</Text>
+                  <Text style={styles.priceValue}>€ {item.avg30 ?? "-"}</Text>
+                </View>
+              </View>
+
+              <View style={styles.resultActions}>
+                <TouchableOpacity
+                  style={styles.cmBtn}
+                  onPress={() => Linking.openURL(getCardmarketUrl(item))}
+                >
+                  <Text style={styles.cmBtnText}>Auf CM ansehen ↗</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.selectBtn,
+                    pickCard === item.card_id && styles.selectBtnActive,
+                  ]}
+                  onPress={() => setPickCard(item.card_id)}
+                >
+                  <Text
+                    style={[
+                      styles.selectBtnText,
+                      pickCard === item.card_id && styles.selectBtnTextActive,
+                    ]}
+                  >
+                    {pickCard === item.card_id ? "✓ Ausgewählt" : "Wählen"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        }}
         ListEmptyComponent={
           <Text
             style={{ color: "#9CA3AF", textAlign: "center", marginTop: 12 }}
@@ -301,23 +332,37 @@ export default function AddCardModal({ visible, onClose, binder }) {
             {cardName ? "No Card found" : "Cardname..."}
           </Text>
         }
-        />
-
-        {/* Add Button */}
-        <TouchableOpacity
-          style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
-          onPress={handleAddCard}
-          disabled={!pickCard}
-        >
-          <Text style={styles.addBtnText}>Insert Card</Text>
-        </TouchableOpacity>
-      </BottomSheetView>
+        ListFooterComponent={
+          <View style={styles.footerBtn}>
+            <TouchableOpacity
+              style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
+              onPress={handleAddCard}
+              disabled={!pickCard}
+            >
+              <Text style={styles.addBtnText}>Insert Card</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
     </BottomSheet>
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  topRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
+  listContent: { paddingHorizontal: 16, paddingBottom: 12 },
+  separator: {
+    paddingVertical: 8,
+    marginBottom: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#444",
+  },
+  separatorText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  footerBtn: { paddingVertical: 12 },
+  topRow: { flexDirection: "row", gap: 12, marginBottom: 16, paddingTop: 8 },
   imageContainer: { width: 90, gap: 8 },
   imagePlaceholder: {
     width: 90,
