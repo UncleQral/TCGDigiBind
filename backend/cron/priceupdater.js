@@ -102,6 +102,7 @@ const processFiles = async () => {
         "utf8",
       );
       const data = JSON.parse(content);
+      const date = new Date(data.createdAt).toISOString().split("T")[0];
 
       const rows = [];
       for (const entry of data.priceGuides) {
@@ -121,7 +122,7 @@ const processFiles = async () => {
             entry["avg1-foil"],
             entry["avg7-foil"],
             entry["avg30-foil"],
-            data.createdAt,
+            date,
           ]);
         }
       }
