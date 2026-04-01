@@ -11,8 +11,8 @@ import {
   View,
 } from "react-native";
 import AddCardModal from "../../../components/AddCardModal";
-import { api } from "../../../utils/api";
 import CardEntity from "../../../components/CardEntity";
+import { api } from "../../../utils/api";
 
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -51,25 +51,26 @@ export default function BinderDetailScreen() {
   };
 
   const handleLongPress = (cardId) => {
-    if(!editMode){
+    if (!editMode) {
       setEditMode(true);
     }
-    setSelectedCards(prev => 
-      prev.includes(cardId) 
-        ? prev.filter(id => id !== cardId)
-        : [...prev, cardId]
+    setSelectedCards((prev) =>
+      prev.includes(cardId)
+        ? prev.filter((id) => id !== cardId)
+        : [...prev, cardId],
     );
   };
-  
+
   const handlePress = (cardId) => {
     if (editMode) {
-      setSelectedCards(prev => 
-        prev.includes(cardId) 
-          ? prev.filter(id => id !== cardId)
-          : [...prev, cardId]
+      setSelectedCards((prev) =>
+        prev.includes(cardId)
+          ? prev.filter((id) => id !== cardId)
+          : [...prev, cardId],
       );
     } else {
-  }
+    }
+  };
 
   useEffect(() => {
     getBinder();
@@ -176,15 +177,19 @@ export default function BinderDetailScreen() {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <CardEntity
-              item={item}
-              onLongPress={()=> handleLongPress(item.id)}
-              onPress={() => handlePress(item.id)}
-              isSelected={selectedCards.includes(item.id)}
+                item={item}
+                onLongPress={() => handleLongPress(item.id)}
+                onPress={() => handlePress(item.id)}
+                isSelected={selectedCards.includes(item.id)}
               />
             )}
             ListEmptyComponent={
               <Text
-                style={{ color: "#9CA3AF", textAlign: "center", marginTop: 20 }}
+                style={{
+                  color: "#9CA3AF",
+                  textAlign: "center",
+                  marginTop: 20,
+                }}
               >
                 Binder is empty.
               </Text>
@@ -218,6 +223,7 @@ export default function BinderDetailScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#1A1A1A" },
   header: {
