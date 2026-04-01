@@ -42,12 +42,14 @@ export const api = {
     return res.json();
   },
 
-  delete: async (path) => {
+  delete: async (path, body = null) => {
     const res = await fetch(`${BASE_URL}${path}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
       },
+      body: body ? JSON.stringify(body) : null,
     });
     return res.json();
   },

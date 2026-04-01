@@ -13,6 +13,7 @@ import {
 import AddCardModal from "../../../components/AddCardModal";
 import CardEntity from "../../../components/CardEntity";
 import { api } from "../../../utils/api";
+import EditCardModal from '../../../components/EditCardModal';
 
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -26,6 +27,8 @@ export default function BinderDetailScreen() {
   const [showAddCard, setShowAddCard] = useState(false);
   const [selectedCards, setSelectedCards] = useState([]);
   const [editMode, setEditMode] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
+const [showEditCard, setShowEditCard] = useState(false);
 
   const router = useRouter();
 
@@ -61,14 +64,29 @@ export default function BinderDetailScreen() {
     );
   };
 
-  const handlePress = (cardId) => {
-    if (editMode) {
-      setSelectedCards((prev) =>
-        prev.includes(cardId)
-          ? prev.filter((id) => id !== cardId)
-          : [...prev, cardId],
-      );
-    } else {
+  const handlePress = (item) => {
+  if (editMode) {
+    setSelectedCards((prev) =>
+      prev.includes(item.id)
+        ? prev.filter((id) => id !== item.id)
+        : [...prev, item.id],
+    );
+  } else {
+    setSelectedCard(item);
+    setShowEditCard(true);
+  }
+};
+
+  const handleDelete = async () => {
+    try {
+      for (const cardId of selectedCards) {
+        await api.delete("/binder_card", { id: cardId });
+      }
+      setEditMode(false);
+      setSelectedCards([]);
+      getCards();
+    } catch (err) {
+      console.log("handleDelete error: ", err);
     }
   };
 
@@ -179,7 +197,7 @@ export default function BinderDetailScreen() {
               <CardEntity
                 item={item}
                 onLongPress={() => handleLongPress(item.id)}
-                onPress={() => handlePress(item.id)}
+                onPress={() => handlePress(item)}
                 isSelected={selectedCards.includes(item.id)}
               />
             )}
@@ -201,16 +219,33 @@ export default function BinderDetailScreen() {
       </View>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => {
-            console.log("Button pressed, showAddCard:", showAddCard);
-            setShowAddCard(true);
-            console.log("After set, showAddCard:", showAddCard);
-          }}
-        >
-          <Text style={styles.addBtnText}>+</Text>
-        </TouchableOpacity>
+        {editMode ? (
+          <View style={styles.editActions}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => {
+                setEditMode(false);
+                setSelectedCards([]);
+              }}
+            >
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+              <Text style={styles.deleteBtnText}>
+                Delete ({selectedCards.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => {
+              setShowAddCard(true);
+            }}
+          >
+            <Text style={styles.addBtnText}>+</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <AddCardModal
         visible={showAddCard}
@@ -220,6 +255,15 @@ export default function BinderDetailScreen() {
         }}
         binder={binder}
       />
+      <EditCardModal
+  visible={showEditCard}
+  onClose={() => {
+    setShowEditCard(false);
+    setSelectedCard(null);
+    getCards();
+  }}
+  item={selectedCard}
+/>
     </View>
   );
 }
@@ -321,5 +365,34 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 48,
+  },
+  editActions: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+  },
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: "#2A2A2A",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderWidth: 0.5,
+    borderColor: "#444",
+  },
+  cancelBtnText: {
+    color: "#9CA3AF",
+    fontWeight: "500",
+  },
+  deleteBtn: {
+    flex: 1,
+    backgroundColor: "#d00000",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  deleteBtnText: {
+    color: "#fff",
+    fontWeight: "500",
   },
 });
