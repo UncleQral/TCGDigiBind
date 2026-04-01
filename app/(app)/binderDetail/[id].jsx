@@ -25,6 +25,7 @@ export default function BinderDetailScreen() {
   const [filterActive, setFilterActive] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
   const [selectedCards, setSelectedCards] = useState([]);
+  const [editMode, setEditMode] = useState(false);
 
   const router = useRouter();
 
@@ -50,12 +51,25 @@ export default function BinderDetailScreen() {
   };
 
   const handleLongPress = (cardId) => {
+    if(!editMode){
+      setEditMode(true);
+    }
     setSelectedCards(prev => 
       prev.includes(cardId) 
         ? prev.filter(id => id !== cardId)
         : [...prev, cardId]
     );
   };
+  
+  const handlePress = (cardId) => {
+    if (editMode) {
+      setSelectedCards(prev => 
+        prev.includes(cardId) 
+          ? prev.filter(id => id !== cardId)
+          : [...prev, cardId]
+      );
+    } else {
+  }
 
   useEffect(() => {
     getBinder();
@@ -164,6 +178,7 @@ export default function BinderDetailScreen() {
               <CardEntity
               item={item}
               onLongPress={()=> handleLongPress(item.id)}
+              onPress={() => handlePress(item.id)}
               isSelected={selectedCards.includes(item.id)}
               />
             )}

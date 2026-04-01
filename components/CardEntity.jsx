@@ -1,10 +1,19 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function CardEntity({ item, onLongPress, isSelected }) {
+export default function CardEntity({ item, onLongPress, onPress, isSelected }) {
   return (
-    <TouchableOpacity style={styles.container} onLongPress={onLongPress}>
-      <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.container}
+      onLongPress={onLongPress}
+      onPress={onPress}
+    >
+      <View
+        style={[
+          styles.card,
+          { borderColor: isSelected ? "#ff7b00" : "transparent" },
+        ]}
+      >
         <View style={styles.picBorder}>
           {item.image_url ? (
             <Image style={styles.pic} source={{ uri: item.image_url }} />
@@ -42,6 +51,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A2A",
     borderRadius: 8,
     overflow: "hidden",
+    borderWidth: 1.5,
   },
   picBorder: {
     borderBottomWidth: 0.5,
@@ -60,15 +70,16 @@ const styles = StyleSheet.create({
   },
   info: {
     padding: 4,
+    backgroundColor: "#2A2A2A",
   },
   name: {
     color: "#FFFFFF",
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "500",
   },
   value: {
     color: "#ffc300",
-    fontSize: 9,
+    fontSize: 11,
     marginTop: 2,
   },
 });
