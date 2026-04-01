@@ -11,9 +11,14 @@ router.get("/", auth, async (req, res) => {
     const user_id = req.user.id;
 
     const results = await query(
-      `SELECT bc.* FROM binder_card bc
-         JOIN binder b ON bc.binder_id = b.id
-         WHERE bc.binder_id = ? AND b.user_id = ?`,
+      `SELECT bc.*,
+              c.name, c.cardmarket_id, c.expansion_id,
+              cp.avg_sell, cp.trend_price, cp.avg1, cp.avg7, cp.avg30, cp.foil_sell
+       FROM binder_card bc
+       JOIN binder b ON bc.binder_id = b.id
+       JOIN card c ON bc.card_id = c.card_id
+       LEFT JOIN card_price cp ON cp.card_id = c.card_id
+       WHERE bc.binder_id = ? AND b.user_id = ?`,
       [binder_id, user_id],
     );
 
