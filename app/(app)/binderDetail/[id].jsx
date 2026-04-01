@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import AddCardModal from "../../../components/AddCardModal";
 import { api } from "../../../utils/api";
+import CardEntity from "../../../components/CardEntity";
 
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -23,6 +24,7 @@ export default function BinderDetailScreen() {
   const [activeTab, setActiveTab] = useState("cards");
   const [filterActive, setFilterActive] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
+  const [selectedCards, setSelectedCards] = useState([]);
 
   const router = useRouter();
 
@@ -45,6 +47,14 @@ export default function BinderDetailScreen() {
     } catch (err) {
       console.log("getCards error:", err);
     }
+  };
+
+  const handleLongPress = (cardId) => {
+    setSelectedCards(prev => 
+      prev.includes(cardId) 
+        ? prev.filter(id => id !== cardId)
+        : [...prev, cardId]
+    );
   };
 
   useEffect(() => {
@@ -151,11 +161,11 @@ export default function BinderDetailScreen() {
             numColumns={4}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <View style={styles.cardItem}>
-                <Text style={{ color: "#fff", fontSize: 10 }}>
-                  {item.card_id}
-                </Text>
-              </View>
+              <CardEntity
+              item={item}
+              onLongPress={()=> handleLongPress(item.id)}
+              isSelected={selectedCards.includes(item.id)}
+              />
             )}
             ListEmptyComponent={
               <Text

@@ -30,12 +30,15 @@ router.get("/", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   try {
-    const binder_id = req.body.binder_id;
-    const card_id = req.body.card_id;
-    const quantity = req.body.quantity;
-    const condition_of_card = req.body.condition_of_card;
-    const status = req.body.status;
-    const foil = req.body.foil;
+    const {
+      binder_id,
+      card_id,
+      quantity,
+      condition_of_card,
+      status,
+      foil,
+      image_url,
+    } = req.body;
     const user_id = req.user.id;
 
     const binder = await query(
@@ -46,8 +49,16 @@ router.post("/", auth, async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
 
     const results = await query(
-      "INSERT INTO binder_card (binder_id, card_id, quantity, condition_of_card, status, foil) VALUES (?, ?, ?, ?, ?, ?)",
-      [binder_id, card_id, quantity, condition_of_card, status, foil],
+      "INSERT INTO binder_card (binder_id, card_id, quantity, condition_of_card, status, foil, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [
+        binder_id,
+        card_id,
+        quantity,
+        condition_of_card,
+        status,
+        foil,
+        image_url,
+      ],
     );
 
     res.json(results);

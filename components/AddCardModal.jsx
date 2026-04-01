@@ -127,6 +127,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
         quantity: 1,
         foil: false,
         status: "owned",
+        image_url: image,
       });
       onClose();
       resetModal();
