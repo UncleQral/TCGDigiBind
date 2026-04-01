@@ -28,6 +28,7 @@ export default function LoginScreen() {
     setInvalidEmail(false);
     try {
       const data = await api.post("/user/login", { email, password });
+      console.log("Login response: ", data);
       if (data.token) {
         login(data.token, data.user);
         router.replace("/(app)");
