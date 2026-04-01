@@ -107,7 +107,9 @@ export default function AddCardModal({ visible, onClose, binder }) {
       const data = await api.get(`/card/search?${params.toString()}`);
       if (binderExpansion) {
         setSearchResults(
-          data.filter((c) => c.cm_expansion_id === binderExpansion.cm_expansion_id),
+          data.filter(
+            (c) => c.cm_expansion_id === binderExpansion.cm_expansion_id,
+          ),
         );
       } else {
         setSearchResults(data);
@@ -127,13 +129,18 @@ export default function AddCardModal({ visible, onClose, binder }) {
         status: "owned",
       });
       onClose();
-      setCardName("");
-      setImage(null);
-      setSearchResults([]);
-      setPickCard("");
+      resetModal();
     } catch (err) {
       console.log("handleAddCard error:", err);
     }
+  };
+  const resetModal = () => {
+    setCardName("");
+    setImage(null);
+    setSearchResults([]);
+    setPickCard("");
+    setSelectedRarity(null);
+    setSelectedRarityObj(null);
   };
 
   const getCardmarketUrl = (item) => {
@@ -155,7 +162,10 @@ export default function AddCardModal({ visible, onClose, binder }) {
       ref={bottomSheetRef}
       index={-1}
       snapPoints={["75%"]}
-      onClose={onClose}
+      onClose={() => {
+        onClose();
+        resetModal();
+      }}
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
@@ -318,7 +328,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
               style={styles.cmFooterBtn}
               onPress={() => {
                 const gameObj = games.find((g) => g.name === binder?.game);
-                const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
+                const gameName =
+                  gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
                 const expansionId = binderExpansion?.cm_expansion_id ?? "";
                 const rarityId = selectedRarityObj?.cm_rarity_id ?? "";
                 const name = encodeURIComponent(cardName.trim());
@@ -334,7 +345,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
               style={styles.cmFooterBtn}
               onPress={() => {
                 const gameObj = games.find((g) => g.name === binder?.game);
-                const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
+                const gameName =
+                  gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
                 const expansionId = binderExpansion?.cm_expansion_id ?? "";
                 const name = encodeURIComponent(cardName.trim());
                 Linking.openURL(
