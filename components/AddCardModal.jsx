@@ -26,6 +26,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [selectedRarity, setSelectedRarity] = useState(null);
   const [selectedRarityObj, setSelectedRarityObj] = useState(null);
   const [binderExpansion, setBinderExpansion] = useState(null);
+  const [orientation, setOrientation] = useState("portrait");
 
   useEffect(() => {
     if (visible) {
@@ -68,11 +69,13 @@ export default function AddCardModal({ visible, onClose, binder }) {
     loadBinderExpansion();
   }, [games, binder]);
 
+  const aspect = orientation === "portrait" ? [3, 4] : [4, 3];
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect,
       quality: 1,
     });
 
@@ -84,7 +87,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect,
       quality: 1,
     });
 
@@ -183,6 +186,20 @@ export default function AddCardModal({ visible, onClose, binder }) {
           <View style={styles.topRow}>
             {/* Photo left */}
             <View style={styles.imageContainer}>
+              <View style={styles.orientationRow}>
+                <TouchableOpacity
+                  style={[styles.orientationBtn, orientation === "portrait" && styles.orientationBtnActive]}
+                  onPress={() => setOrientation("portrait")}
+                >
+                  <Text style={[styles.orientationBtnText, orientation === "portrait" && styles.orientationBtnTextActive]}>P</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.orientationBtn, orientation === "landscape" && styles.orientationBtnActive]}
+                  onPress={() => setOrientation("landscape")}
+                >
+                  <Text style={[styles.orientationBtnText, orientation === "landscape" && styles.orientationBtnTextActive]}>L</Text>
+                </TouchableOpacity>
+              </View>
               <TouchableOpacity
                 style={styles.imagePlaceholder}
                 onPress={pickImage}
@@ -373,6 +390,11 @@ export default function AddCardModal({ visible, onClose, binder }) {
 }
 const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 12 },
+  orientationRow: { flexDirection: "row", gap: 4 },
+  orientationBtn: { flex: 1, paddingVertical: 4, borderRadius: 6, backgroundColor: "#1A1A1A", borderWidth: 0.5, borderColor: "#444", alignItems: "center" },
+  orientationBtnActive: { backgroundColor: "#ff7b00", borderColor: "#ff7b00" },
+  orientationBtnText: { color: "#9CA3AF", fontSize: 11 },
+  orientationBtnTextActive: { color: "#fff" },
   footerBtn: { paddingVertical: 12, gap: 8 },
   cmFooterBtn: {
     backgroundColor: "#1A1A1A",

@@ -23,6 +23,7 @@ export default function BinderCreationModal({ visible, onClose }) {
   const [binderPic, setBinderPic] = useState(null);
   const [games, setGames] = useState([]);
   const [expansions, setExpansions] = useState([]);
+  const [orientation, setOrientation] = useState("portrait");
   const bottomSheetRef = useRef(null);
 
   useEffect(() => {
@@ -49,11 +50,13 @@ export default function BinderCreationModal({ visible, onClose }) {
     setBinderSetId(null);
   }, [binderGameId]);
 
+  const aspect = orientation === "portrait" ? [3, 4] : [4, 3];
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect,
       quality: 1,
     });
 
@@ -64,7 +67,7 @@ export default function BinderCreationModal({ visible, onClose }) {
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect,
       quality: 1,
     });
 
@@ -120,15 +123,31 @@ export default function BinderCreationModal({ visible, onClose }) {
     >
       <BottomSheetView>
         <View style={styles.popupContainer}>
-          <TouchableOpacity onPress={pickImage}>
-            {binderPic ? (
-              <Image source={{ uri: binderPic }} style={styles.binderImage} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <MaterialIcons name="add-a-photo" size={28} color="#9CA3AF" />
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={{ gap: 6 }}>
+            <View style={styles.orientationRow}>
+              <TouchableOpacity
+                style={[styles.orientationBtn, orientation === "portrait" && styles.orientationBtnActive]}
+                onPress={() => setOrientation("portrait")}
+              >
+                <Text style={[styles.orientationBtnText, orientation === "portrait" && styles.orientationBtnTextActive]}>P</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.orientationBtn, orientation === "landscape" && styles.orientationBtnActive]}
+                onPress={() => setOrientation("landscape")}
+              >
+                <Text style={[styles.orientationBtnText, orientation === "landscape" && styles.orientationBtnTextActive]}>L</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={pickImage}>
+              {binderPic ? (
+                <Image source={{ uri: binderPic }} style={styles.binderImage} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <MaterialIcons name="add-a-photo" size={28} color="#9CA3AF" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
 
           <View style={{ flex: 1 }}>
             <BottomSheetTextInput
@@ -170,6 +189,11 @@ export default function BinderCreationModal({ visible, onClose }) {
   );
 }
 const styles = StyleSheet.create({
+  orientationRow: { flexDirection: "row", gap: 4 },
+  orientationBtn: { flex: 1, paddingVertical: 4, borderRadius: 6, backgroundColor: "#1A1A1A", borderWidth: 0.5, borderColor: "#444", alignItems: "center" },
+  orientationBtnActive: { backgroundColor: "#ff7b00", borderColor: "#ff7b00" },
+  orientationBtnText: { color: "#9CA3AF", fontSize: 11 },
+  orientationBtnTextActive: { color: "#fff" },
   popupContainer: {
     flexDirection: "row",
     padding: 20,
