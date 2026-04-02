@@ -27,7 +27,7 @@ export default function BinderEntity({
           </View>
         </View>
 
-        <Text style={styles.binderValue}>0,00 €</Text>
+        <Text style={styles.binderValue}>{item?.total_value ? `€ ${parseFloat(item.total_value).toFixed(2)}` : '0,00 €'}</Text>
       </View>
     </TouchableOpacity>
   );

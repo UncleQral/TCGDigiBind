@@ -8,9 +8,16 @@ router.get("/", auth, async (req, res) => {
   try {
     const user_id = req.user.id;
 
-    const results = await query("SELECT * FROM binder WHERE user_id = ?", [
-      user_id,
-    ]);
+    const results = await query(
+      `SELECT b.*, 
+        COALESCE(SUM(cp.trend_price), 0) as total_value
+      FROM binder b
+      LEFT JOIN binder_card bc ON bc.binder_id = b.id
+      LEFT JOIN card_price cp ON cp.card_id = bc.card_id
+      WHERE b.user_id = ?
+      GROUP BY b.id`,
+      [user_id],
+    );
 
     res.json(results);
   } catch (err) {

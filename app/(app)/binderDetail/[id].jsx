@@ -35,6 +35,7 @@ export default function BinderDetailScreen() {
   const getBinder = async () => {
     try {
       const data = await api.get(`/binder/${id}`);
+      console.log("Binder data: ", data);
       setBinder(data);
       setLoading(false);
     } catch (err) {
@@ -126,7 +127,6 @@ export default function BinderDetailScreen() {
               </View>
             </View>
             <Text style={styles.value}>
-              {" "}
               {binder?.total_value
                 ? `€ ${parseFloat(binder.total_value).toFixed(2)}`
                 : "0,00€"}
