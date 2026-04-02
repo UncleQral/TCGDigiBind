@@ -12,7 +12,7 @@ export default function EditCardModal({ visible, onClose, item }) {
   const [activeTab, setActiveTab] = useState("card");
   const [customName, setCustomName] = useState("");
   const [image, setImage] = useState(null);
-  const [orientation, setOrientation] = useState("portrait");
+  const [aspectRatio, setAspectRatio] = useState(3 / 4);
 
   const bottomSheetRef = useRef(null);
 
@@ -26,18 +26,26 @@ export default function EditCardModal({ visible, onClose, item }) {
     }
   }, [visible]);
 
-  const aspect = orientation === "portrait" ? [3, 4] : [4, 3];
+  const applyImage = (uri) => {
+    setImage(uri);
+    Image.getSize(uri, (w, h) => setAspectRatio(w > h ? 4 / 3 : 3 / 4));
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect,
       quality: 1,
     });
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+    if (!result.canceled) applyImage(result.assets[0].uri);
+  };
+
+  const takePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!result.canceled) applyImage(result.assets[0].uri);
   };
 
   const handleSave = async () => {
@@ -60,7 +68,7 @@ export default function EditCardModal({ visible, onClose, item }) {
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
-      snapPoints={["75%"]}
+      snapPoints={["85%"]}
       onClose={onClose}
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
@@ -102,24 +110,8 @@ export default function EditCardModal({ visible, onClose, item }) {
         {/* Content */}
         {activeTab === "card" ? (
           <View style={styles.cardTab}>
-            {/* Orientation */}
-            <View style={styles.orientationRow}>
-              <TouchableOpacity
-                style={[styles.orientationBtn, orientation === "portrait" && styles.orientationBtnActive]}
-                onPress={() => setOrientation("portrait")}
-              >
-                <Text style={[styles.orientationBtnText, orientation === "portrait" && styles.orientationBtnTextActive]}>Portrait</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.orientationBtn, orientation === "landscape" && styles.orientationBtnActive]}
-                onPress={() => setOrientation("landscape")}
-              >
-                <Text style={[styles.orientationBtnText, orientation === "landscape" && styles.orientationBtnTextActive]}>Landscape</Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Bild */}
-            <TouchableOpacity style={[styles.imageContainer, { aspectRatio: orientation === "portrait" ? 3 / 4 : 4 / 3 }]} onPress={pickImage}>
+            <View style={[styles.imageContainer, { aspectRatio }]}>
               {image || item?.image_url ? (
                 <Image
                   source={{ uri: image || item?.image_url }}
@@ -137,7 +129,17 @@ export default function EditCardModal({ visible, onClose, item }) {
                   </Text>
                 </View>
               )}
-            </TouchableOpacity>
+            </View>
+
+            {/* Image source buttons */}
+            <View style={styles.imageSourceRow}>
+              <TouchableOpacity style={styles.imageSourceBtn} onPress={pickImage}>
+                <Text style={styles.imageSourceBtnText}>Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.imageSourceBtn} onPress={takePhoto}>
+                <Text style={styles.imageSourceBtnText}>Camera</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Name */}
             <BottomSheetTextInput
@@ -211,11 +213,9 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   cardTab: { gap: 12 },
-  orientationRow: { flexDirection: "row", gap: 6 },
-  orientationBtn: { flex: 1, paddingVertical: 5, borderRadius: 6, backgroundColor: "#1A1A1A", borderWidth: 0.5, borderColor: "#444", alignItems: "center" },
-  orientationBtnActive: { backgroundColor: "#ff7b00", borderColor: "#ff7b00" },
-  orientationBtnText: { color: "#9CA3AF", fontSize: 12 },
-  orientationBtnTextActive: { color: "#fff" },
+  imageSourceRow: { flexDirection: "row", gap: 8 },
+  imageSourceBtn: { flex: 1, backgroundColor: "#1A1A1A", borderRadius: 8, padding: 10, alignItems: "center", borderWidth: 0.5, borderColor: "#444" },
+  imageSourceBtnText: { color: "#9CA3AF", fontSize: 13 },
   imageContainer: {
     width: "100%",
     aspectRatio: 1.5,
