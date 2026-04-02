@@ -3,7 +3,7 @@ import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import * as ImagePicker from "expo-image-picker";
+import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
 import { Image, Keyboard, Modal, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { api } from "../utils/api";
@@ -43,20 +43,27 @@ export default function EditCardModal({ visible, onClose, item }) {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      quality: 1,
-    });
-    if (!result.canceled) applyImage(result.assets[0].uri);
+    try {
+      const result = await ImageCropPicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      applyImage(result.path);
+    } catch (_) {}
   };
 
   const takePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 1,
-    });
-    if (!result.canceled) applyImage(result.assets[0].uri);
+    try {
+      const result = await ImageCropPicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      applyImage(result.path);
+    } catch (_) {}
   };
 
   const handleSave = async () => {

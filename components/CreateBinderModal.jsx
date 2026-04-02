@@ -3,7 +3,7 @@ import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import * as ImagePicker from "expo-image-picker";
+import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
 import {
     Image,
@@ -50,27 +50,26 @@ export default function BinderCreationModal({ visible, onClose }) {
   }, [binderGameId]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setBinderPic(result.assets[0].uri);
-    }
+    try {
+      const result = await ImageCropPicker.openPicker({
+        width: 400,
+        height: 300,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      setBinderPic(result.path);
+    } catch (_) {}
   };
   const takePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setBinderPic(result.assets[0].uri);
-    }
+    try {
+      const result = await ImageCropPicker.openCamera({
+        width: 400,
+        height: 300,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      setBinderPic(result.path);
+    } catch (_) {}
   };
 
   const handleCreate = async () => {

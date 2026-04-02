@@ -2,17 +2,16 @@ import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import BinderEntity from "../../components/BinderCard";
 import CreateBinderModal from "../../components/CreateBinderModal";
 import { api } from "../../utils/api";
-
 
 export default function Homescreen() {
   const [binders, setBinders] = useState([]);
@@ -23,6 +22,7 @@ export default function Homescreen() {
   const [showBinderModal, setShowBinderModal] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBinders, setSelectedBinders] = useState([]);
+  const [totalValue, setTotalValue] = useState(0);
 
   const router = useRouter();
 
@@ -30,7 +30,11 @@ export default function Homescreen() {
     try {
       const data = await api.get("/binder");
       setBinders(data);
-      console.log(binders);
+      const total = data.reduce(
+        (sum, b) => sum + parseFloat(b.total_value || 0),
+        0,
+      );
+      setTotalValue(total);
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -79,7 +83,7 @@ export default function Homescreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerLabel}>Total Value</Text>
-          <Text style={styles.headerValue}>€ 0,00</Text>
+          <Text style={styles.headerValue}>€ {totalValue.toFixed(2)}</Text>
         </View>
         <TouchableOpacity style={styles.profileIcon}>
           <Ionicons name="person-circle-outline" size={38} color="#ff7b00" />
@@ -119,7 +123,11 @@ export default function Homescreen() {
           <BinderEntity
             item={item}
             onLongPress={() => handleLongPress(item.id)}
-            onPress={() => selectionMode ? handleSelect(item.id) : router.push(`/(app)/binderDetail/${item.id}`)}
+            onPress={() =>
+              selectionMode
+                ? handleSelect(item.id)
+                : router.push(`/(app)/binderDetail/${item.id}`)
+            }
             isSelected={selectedBinders.includes(item.id)}
           />
         )}

@@ -2,7 +2,7 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import * as ImagePicker from "expo-image-picker";
+import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -85,20 +85,27 @@ export default function AddCardModal({ visible, onClose, binder }) {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      quality: 1,
-    });
-    if (!result.canceled) applyImage(result.assets[0].uri);
+    try {
+      const result = await ImageCropPicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      applyImage(result.path);
+    } catch (_) {}
   };
 
   const takePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 1,
-    });
-    if (!result.canceled) applyImage(result.assets[0].uri);
+    try {
+      const result = await ImageCropPicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+        freeStyleCropEnabled: true,
+      });
+      applyImage(result.path);
+    } catch (_) {}
   };
 
   const searchCard = async (searchText) => {
