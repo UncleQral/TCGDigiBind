@@ -24,8 +24,14 @@ router.get("/:id", auth, async (req, res) => {
     const user_id = req.user.id;
 
     const results = await query(
-      "SELECT * FROM binder WHERE id = ? AND user_id = ?",
-      [id, user_id]
+      `SELECT b.*, 
+        COALESCE(SUM(cp.trend_price), 0) as total_value
+      FROM binder b
+      LEFT JOIN binder_card bc ON bc.binder_id = b.id
+      LEFT JOIN card_price cp ON cp.card_id = bc.card_id
+      WHERE b.id = ? AND b.user_id = ?
+      GROUP BY b.id`,
+      [id, user_id],
     );
 
     if (results.length === 0) {

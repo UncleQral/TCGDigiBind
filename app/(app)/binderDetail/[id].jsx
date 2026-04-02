@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import AddCardModal from "../../../components/AddCardModal";
 import CardEntity from "../../../components/CardEntity";
+import EditCardModal from "../../../components/EditCardModal";
 import { api } from "../../../utils/api";
-import EditCardModal from '../../../components/EditCardModal';
 
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -28,7 +28,7 @@ export default function BinderDetailScreen() {
   const [selectedCards, setSelectedCards] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
-const [showEditCard, setShowEditCard] = useState(false);
+  const [showEditCard, setShowEditCard] = useState(false);
 
   const router = useRouter();
 
@@ -65,17 +65,17 @@ const [showEditCard, setShowEditCard] = useState(false);
   };
 
   const handlePress = (item) => {
-  if (editMode) {
-    setSelectedCards((prev) =>
-      prev.includes(item.id)
-        ? prev.filter((id) => id !== item.id)
-        : [...prev, item.id],
-    );
-  } else {
-    setSelectedCard(item);
-    setShowEditCard(true);
-  }
-};
+    if (editMode) {
+      setSelectedCards((prev) =>
+        prev.includes(item.id)
+          ? prev.filter((id) => id !== item.id)
+          : [...prev, item.id],
+      );
+    } else {
+      setSelectedCard(item);
+      setShowEditCard(true);
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -125,7 +125,12 @@ const [showEditCard, setShowEditCard] = useState(false);
                 <Text style={styles.set}>{binder?.binder_set}</Text>
               </View>
             </View>
-            <Text style={styles.value}>0,00€</Text>
+            <Text style={styles.value}>
+              {" "}
+              {binder?.total_value
+                ? `€ ${parseFloat(binder.total_value).toFixed(2)}`
+                : "0,00€"}
+            </Text>
           </View>
         </View>
 
@@ -256,14 +261,14 @@ const [showEditCard, setShowEditCard] = useState(false);
         binder={binder}
       />
       <EditCardModal
-  visible={showEditCard}
-  onClose={() => {
-    setShowEditCard(false);
-    setSelectedCard(null);
-    getCards();
-  }}
-  item={selectedCard}
-/>
+        visible={showEditCard}
+        onClose={() => {
+          setShowEditCard(false);
+          setSelectedCard(null);
+          getCards();
+        }}
+        item={selectedCard}
+      />
     </View>
   );
 }
