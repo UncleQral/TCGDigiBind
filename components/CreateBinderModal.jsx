@@ -53,7 +53,7 @@ export default function BinderCreationModal({ visible, onClose }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [4, 3],
+
       quality: 1,
     });
 
@@ -64,7 +64,7 @@ export default function BinderCreationModal({ visible, onClose }) {
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+
       quality: 1,
     });
 
@@ -101,11 +101,11 @@ export default function BinderCreationModal({ visible, onClose }) {
   useEffect(() => {
     const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
       setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
+        if (visible) bottomSheetRef.current?.snapToIndex(0);
       }, 160);
     });
     return () => hideSubscription.remove();
-  }, []);
+  }, [visible]);
 
   return (
     <BottomSheet

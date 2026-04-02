@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useEffect, useRef, useState } from "react";
 import {
   Image,
+  Keyboard,
   Linking,
   StyleSheet,
   Text,
@@ -26,7 +27,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [selectedRarity, setSelectedRarity] = useState(null);
   const [selectedRarityObj, setSelectedRarityObj] = useState(null);
   const [binderExpansion, setBinderExpansion] = useState(null);
-  const [orientation, setOrientation] = useState("portrait");
+  const [imageAspectRatio, setImageAspectRatio] = useState(3 / 4);
 
   useEffect(() => {
     if (visible) {
@@ -69,31 +70,35 @@ export default function AddCardModal({ visible, onClose, binder }) {
     loadBinderExpansion();
   }, [games, binder]);
 
-  const aspect = orientation === "portrait" ? [3, 4] : [4, 3];
+  useEffect(() => {
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      setTimeout(() => {
+        if (visible) bottomSheetRef.current?.snapToIndex(0);
+      }, 160);
+    });
+    return () => sub.remove();
+  }, [visible]);
+
+  const applyImage = (uri) => {
+    setImage(uri);
+    Image.getSize(uri, (w, h) => setImageAspectRatio(w > h ? 4 / 3 : 3 / 4));
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect,
       quality: 1,
     });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+    if (!result.canceled) applyImage(result.assets[0].uri);
   };
 
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect,
       quality: 1,
     });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+    if (!result.canceled) applyImage(result.assets[0].uri);
   };
 
   const searchCard = async (searchText) => {
@@ -173,8 +178,7 @@ export default function AddCardModal({ visible, onClose, binder }) {
       enablePanDownToClose
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
+      keyboardBehavior="extend"
     >
       <BottomSheetFlatList
         data={searchResults}
@@ -186,22 +190,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
           <View style={styles.topRow}>
             {/* Photo left */}
             <View style={styles.imageContainer}>
-              <View style={styles.orientationRow}>
-                <TouchableOpacity
-                  style={[styles.orientationBtn, orientation === "portrait" && styles.orientationBtnActive]}
-                  onPress={() => setOrientation("portrait")}
-                >
-                  <Text style={[styles.orientationBtnText, orientation === "portrait" && styles.orientationBtnTextActive]}>P</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.orientationBtn, orientation === "landscape" && styles.orientationBtnActive]}
-                  onPress={() => setOrientation("landscape")}
-                >
-                  <Text style={[styles.orientationBtnText, orientation === "landscape" && styles.orientationBtnTextActive]}>L</Text>
-                </TouchableOpacity>
-              </View>
               <TouchableOpacity
-                style={styles.imagePlaceholder}
+                style={[styles.imagePlaceholder, { aspectRatio: imageAspectRatio }]}
                 onPress={pickImage}
               >
                 {image ? (
@@ -390,11 +380,6 @@ export default function AddCardModal({ visible, onClose, binder }) {
 }
 const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 12 },
-  orientationRow: { flexDirection: "row", gap: 4 },
-  orientationBtn: { flex: 1, paddingVertical: 4, borderRadius: 6, backgroundColor: "#1A1A1A", borderWidth: 0.5, borderColor: "#444", alignItems: "center" },
-  orientationBtnActive: { backgroundColor: "#ff7b00", borderColor: "#ff7b00" },
-  orientationBtnText: { color: "#9CA3AF", fontSize: 11 },
-  orientationBtnTextActive: { color: "#fff" },
   footerBtn: { paddingVertical: 12, gap: 8 },
   cmFooterBtn: {
     backgroundColor: "#1A1A1A",
@@ -409,7 +394,6 @@ const styles = StyleSheet.create({
   imageContainer: { width: 90, gap: 8 },
   imagePlaceholder: {
     width: 90,
-    height: 90,
     backgroundColor: "#1A1A1A",
     borderRadius: 12,
     borderWidth: 1,
@@ -418,7 +402,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  cardImage: { width: 90, height: 90, borderRadius: 12 },
+  cardImage: { width: 90, height: "100%", borderRadius: 12 },
   cameraBtn: {
     backgroundColor: "#1A1A1A",
     borderRadius: 8,
