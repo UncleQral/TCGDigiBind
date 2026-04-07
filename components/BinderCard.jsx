@@ -1,4 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Colors } from "../constants/theme";
 
 export default function BinderEntity({
   item,
@@ -27,7 +28,11 @@ export default function BinderEntity({
           </View>
         </View>
 
-        <Text style={styles.binderValue}>{item?.total_value ? `€ ${parseFloat(item.total_value).toFixed(2)}` : '0,00 €'}</Text>
+        <Text style={styles.binderValue}>
+          {item?.total_value
+            ? `€ ${parseFloat(item.total_value).toFixed(2)}`
+            : "0,00 €"}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -36,25 +41,25 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     padding: 12,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     gap: 12,
     alignItems: "center",
     marginBottom: 10,
     borderWidth: 0.5,
-    borderColor: "#333",
+    borderColor: Colors.borderDark,
   },
   binderImage: {
     width: 56,
     height: 56,
     borderRadius: 8,
-    backgroundColor: "#333",
+    backgroundColor: Colors.borderDark,
   },
   binderStat: {
     flex: 1,
   },
   binderName: {
-    color: "#FFFFFF",
+    color: Colors.textWhite,
     fontSize: 14,
     fontWeight: "500",
     marginBottom: 4,
@@ -64,32 +69,32 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   binderGame: {
-    color: "#ffc300",
-    backgroundColor: "#333",
+    color: Colors.primaryLight,
+    backgroundColor: Colors.borderDark,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
     fontSize: 10,
     borderWidth: 0.5,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
   },
   binderSet: {
-    color: "#9CA3AF",
-    backgroundColor: "#333",
+    color: Colors.textMuted,
+    backgroundColor: Colors.borderDark,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
     fontSize: 10,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
   binderValue: {
-    color: "#ffc300",
+    color: Colors.primaryLight,
     fontWeight: "500",
     fontSize: 14,
   },
   selected: {
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     borderWidth: 2,
   },
 });

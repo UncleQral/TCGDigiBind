@@ -41,8 +41,6 @@ nodecron.schedule("0 5 * * *", async () => {
 });
 
 const testRun = async () => {
-  console.log("Test started...");
-
   const browser = await puppeteer.launch({
     headless: true,
     args: [
@@ -56,9 +54,6 @@ const testRun = async () => {
 
   await page.goto("https://www.cardmarket.com/en/Magic");
   await page.waitForSelector('[name="username"]');
-
-  console.log("Username: ", process.env.CM_USERNAME);
-  console.log("Password: ", process.env.CM_PASSWORD);
 
   await page.type('[name="username"]', process.env.CM_USERNAME);
   await page.type('[name="userPassword"]', process.env.CM_PASSWORD);

@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { Colors } from "../../constants/theme";
 import { api } from "../../utils/api";
 
 export default function RegisterScreen() {
@@ -101,49 +102,49 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
   },
   card: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 28,
     borderWidth: 1,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 24,
-    color: "#ff8800",
+    color: Colors.primaryLight,
   },
   subtitle: {
     fontSize: 13,
     textAlign: "center",
     marginBottom: 32,
-    color: "#9CA3AF",
+    color: Colors.textMuted,
   },
   input: {
     borderWidth: 0.5,
-    borderColor: "#444444",
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
-    backgroundColor: "#1A1A1A",
-    color: "#FFFFFF",
+    backgroundColor: Colors.inputBg,
+    color: Colors.textWhite,
   },
   inputError: {
     borderWidth: 1,
-    borderColor: "#d00000",
+    borderColor: Colors.error,
   },
   button: {
-    backgroundColor: "#ffc300",
+    backgroundColor: Colors.primary,
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
     marginBottom: 16,
   },
-  buttonText: { color: "#000000", fontWeight: "bold", fontSize: 16 },
-  error: { color: "red", marginBottom: 12 },
-  link: { textAlign: "center", marginTop: 16, color: "#ff8800" },
+  buttonText: { color: Colors.textWhite, fontWeight: "bold", fontSize: 16 },
+  error: { color: Colors.error, marginBottom: 12 },
+  link: { textAlign: "center", marginTop: 16, color: Colors.primaryLight },
 });

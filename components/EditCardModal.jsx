@@ -3,9 +3,19 @@ import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
-import { Image, Keyboard, Modal, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import {
+    Image,
+    Keyboard,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
+} from "react-native";
+import ImageCropPicker from "react-native-image-crop-picker";
+import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
 
 export default function EditCardModal({ visible, onClose, item }) {
@@ -87,15 +97,27 @@ export default function EditCardModal({ visible, onClose, item }) {
 
   return (
     <>
-      <Modal visible={zoomVisible} transparent animationType="fade" onRequestClose={() => setZoomVisible(false)}>
+      <Modal
+        visible={zoomVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setZoomVisible(false)}
+      >
         <View style={styles.zoomBackdrop}>
-          <TouchableOpacity style={styles.zoomClose} onPress={() => setZoomVisible(false)}>
+          <TouchableOpacity
+            style={styles.zoomClose}
+            onPress={() => setZoomVisible(false)}
+          >
             <Text style={styles.zoomCloseText}>✕</Text>
           </TouchableOpacity>
           {imageUri && (
             <Image
               source={{ uri: imageUri }}
-              style={{ width: zoomWidth, height: zoomWidth / aspectRatio, borderRadius: 12 }}
+              style={{
+                width: zoomWidth,
+                height: zoomWidth / aspectRatio,
+                borderRadius: 12,
+              }}
               resizeMode="contain"
             />
           )}
@@ -119,7 +141,12 @@ export default function EditCardModal({ visible, onClose, item }) {
               style={[styles.tab, activeTab === "card" && styles.activeTab]}
               onPress={() => setActiveTab("card")}
             >
-              <Text style={[styles.tabText, activeTab === "card" && styles.activeTabText]}>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "card" && styles.activeTabText,
+                ]}
+              >
                 Card
               </Text>
             </TouchableOpacity>
@@ -127,7 +154,12 @@ export default function EditCardModal({ visible, onClose, item }) {
               style={[styles.tab, activeTab === "stats" && styles.activeTab]}
               onPress={() => setActiveTab("stats")}
             >
-              <Text style={[styles.tabText, activeTab === "stats" && styles.activeTabText]}>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "stats" && styles.activeTabText,
+                ]}
+              >
                 Price Stats
               </Text>
             </TouchableOpacity>
@@ -145,10 +177,17 @@ export default function EditCardModal({ visible, onClose, item }) {
                   activeOpacity={imageUri ? 0.8 : 1}
                 >
                   {imageUri ? (
-                    <Image source={{ uri: imageUri }} style={styles.cardImage} />
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={styles.cardImage}
+                    />
                   ) : (
                     <View style={styles.imagePlaceholder}>
-                      <MaterialCommunityIcons name="image-off-outline" size={28} color="#9CA3AF" />
+                      <MaterialCommunityIcons
+                        name="image-off-outline"
+                        size={28}
+                        color="#9CA3AF"
+                      />
                       <Text style={styles.imagePlaceholderText}>No image</Text>
                     </View>
                   )}
@@ -158,15 +197,23 @@ export default function EditCardModal({ visible, onClose, item }) {
                 <View style={styles.cardControls}>
                   <BottomSheetTextInput
                     style={styles.input}
-                    placeholder={item?.custom_name || item?.name?.split("[")[0].trim()}
+                    placeholder={
+                      item?.custom_name || item?.name?.split("[")[0].trim()
+                    }
                     placeholderTextColor="#9CA3AF"
                     value={customName}
                     onChangeText={setCustomName}
                   />
-                  <TouchableOpacity style={styles.imageSourceBtn} onPress={pickImage}>
+                  <TouchableOpacity
+                    style={styles.imageSourceBtn}
+                    onPress={pickImage}
+                  >
                     <Text style={styles.imageSourceBtnText}>Gallery</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.imageSourceBtn} onPress={takePhoto}>
+                  <TouchableOpacity
+                    style={styles.imageSourceBtn}
+                    onPress={takePhoto}
+                  >
                     <Text style={styles.imageSourceBtnText}>Camera</Text>
                   </TouchableOpacity>
                 </View>
@@ -181,7 +228,9 @@ export default function EditCardModal({ visible, onClose, item }) {
             <View style={styles.statsTab}>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Trend</Text>
-                <Text style={styles.statValue}>€ {item?.trend_price ?? "-"}</Text>
+                <Text style={styles.statValue}>
+                  € {item?.trend_price ?? "-"}
+                </Text>
               </View>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>1 Day</Text>
@@ -210,10 +259,16 @@ export default function EditCardModal({ visible, onClose, item }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   tabs: { flexDirection: "row", gap: 8, marginBottom: 16 },
-  tab: { flex: 1, padding: 10, borderRadius: 8, alignItems: "center", backgroundColor: "#1A1A1A" },
-  activeTab: { backgroundColor: "#ff7b00" },
-  tabText: { color: "#9CA3AF", fontWeight: "500" },
-  activeTabText: { color: "#fff" },
+  tab: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    backgroundColor: Colors.background,
+  },
+  activeTab: { backgroundColor: Colors.primary },
+  tabText: { color: Colors.textMuted, fontWeight: "500" },
+  activeTabText: { color: Colors.textWhite },
   cardTab: { gap: 12 },
   cardRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   imageContainer: { width: "40%", borderRadius: 12, overflow: "hidden" },
@@ -221,50 +276,55 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: Colors.border,
     borderStyle: "dashed",
     gap: 6,
   },
-  imagePlaceholderText: { color: "#9CA3AF", fontSize: 11 },
+  imagePlaceholderText: { color: Colors.textMuted, fontSize: 11 },
   cardControls: { flex: 1, gap: 8 },
   imageSourceBtn: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 10,
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
-  imageSourceBtnText: { color: "#9CA3AF", fontSize: 13 },
+  imageSourceBtnText: { color: Colors.textMuted, fontSize: 13 },
   input: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 12,
     borderWidth: 0.5,
-    borderColor: "#444",
-    color: "#fff",
+    borderColor: Colors.border,
+    color: Colors.textWhite,
     fontSize: 14,
   },
-  saveBtn: { backgroundColor: "#ff7b00", borderRadius: 12, padding: 14, alignItems: "center" },
-  saveBtnText: { color: "#fff", fontWeight: "500", fontSize: 15 },
+  saveBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: "center",
+  },
+  saveBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
   statsTab: { gap: 12 },
   statRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 12,
     borderWidth: 0.5,
-    borderColor: "#333",
+    borderColor: Colors.borderDark,
   },
-  statLabel: { color: "#9CA3AF", fontSize: 14 },
-  statValue: { color: "#ffc300", fontSize: 14, fontWeight: "500" },
+  statLabel: { color: Colors.textMuted, fontSize: 14 },
+  statValue: { color: Colors.primaryLight, fontSize: 14, fontWeight: "500" },
   zoomBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.85)",
@@ -278,9 +338,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#333",
+    backgroundColor: Colors.borderDark,
     alignItems: "center",
     justifyContent: "center",
   },
-  zoomCloseText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  zoomCloseText: { color: Colors.textWhite, fontSize: 16, fontWeight: "600" },
 });

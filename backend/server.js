@@ -42,6 +42,9 @@ app.use("/graded_card", gradedCardRouter);
 const gradingCompanyRouter = require("./routes/grading_company.js");
 app.use("/grading_company", gradingCompanyRouter);
 
+const tag_colorRouter = require("./routes/tag_color");
+app.use("/tag_color", tag_colorRouter);
+
 require("./cron/priceupdater.js");
 require("./cron/setups/setupsets.js");
 require("./cron/setups/setuprarities.js");

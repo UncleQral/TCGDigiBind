@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Colors } from "../constants/theme";
 
 export default function SelectModal({
   label,
@@ -31,7 +32,6 @@ export default function SelectModal({
       <TouchableOpacity
         style={[styles.trigger, !enabled && styles.triggerDisabled]}
         onPress={() => {
-          console.log("SelectModal trigger pressed, enabled:", enabled);
           enabled && setVisible(true);
         }}
         activeOpacity={0.7}
@@ -110,9 +110,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -121,11 +121,11 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   triggerText: {
-    color: "#FFFFFF",
+    color: Colors.textWhite,
     fontSize: 15,
   },
   placeholder: {
-    color: "#9CA3AF",
+    color: Colors.textMuted,
   },
   overlay: {
     flex: 1,
@@ -134,20 +134,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   sheet: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
     maxHeight: 400,
     paddingVertical: 8,
   },
   sheetLabel: {
-    color: "#9CA3AF",
+    color: Colors.textMuted,
     fontSize: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#333",
+    borderBottomColor: Colors.borderDark,
   },
   option: {
     flexDirection: "row",
@@ -156,26 +156,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#333",
+    borderBottomColor: Colors.borderDark,
   },
   optionSelected: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
   },
   optionText: {
-    color: "#FFFFFF",
+    color: Colors.textWhite,
     fontSize: 15,
   },
   optionTextSelected: {
-    color: "#ff7b00",
+    color: Colors.primaryLight,
   },
   searchInput: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     margin: 10,
-    color: "#FFFFFF",
+    color: Colors.textWhite,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
 });

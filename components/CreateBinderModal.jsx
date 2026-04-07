@@ -1,18 +1,19 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, {
-    BottomSheetTextInput,
-    BottomSheetView,
+  BottomSheetTextInput,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
 import {
-    Image,
-    Keyboard,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import ImageCropPicker from "react-native-image-crop-picker";
+import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
 import SelectModal from "./SelectModal";
 
@@ -73,8 +74,6 @@ export default function BinderCreationModal({ visible, onClose }) {
   };
 
   const handleCreate = async () => {
-    console.log("handleCreate called!");
-    console.log("Data: ", { binderName, binderGameId, binderSetId, binderPic });
     try {
       const selectedGame = games.find((g) => g.id === binderGameId);
       const selectedSet = expansions.find((e) => e.id === binderSetId);
@@ -86,7 +85,6 @@ export default function BinderCreationModal({ visible, onClose }) {
           binderSetId === "other" ? "Other" : (selectedSet?.name ?? null),
         image_url: binderPic,
       });
-      console.log("Response: ", data);
       onClose();
       setBinderName("");
       setBinderGameId(null);
@@ -94,7 +92,6 @@ export default function BinderCreationModal({ visible, onClose }) {
       setBinderPic(null);
     } catch (err) {
       console.log("Binder Creation error: ", err);
-      console.log("Error details: ", JSON.stringify(err));
     }
   };
   useEffect(() => {
@@ -168,6 +165,7 @@ export default function BinderCreationModal({ visible, onClose }) {
     </BottomSheet>
   );
 }
+
 const styles = StyleSheet.create({
   popupContainer: {
     flexDirection: "row",
@@ -184,40 +182,40 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 12,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderWidth: 1,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
   },
   createBtn: {
-    backgroundColor: "#ff7b00",
+    backgroundColor: Colors.primary,
     padding: 14,
     borderRadius: 12,
     alignItems: "center",
     margin: 20,
     marginTop: 0,
   },
-  createBtnText: { color: "#fff", fontWeight: "500", fontSize: 15 },
+  createBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
   input: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.inputBg,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
-    color: "#FFFFFF",
+    color: Colors.textWhite,
   },
   pickerWrapper: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.inputBg,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
     borderRadius: 8,
     marginBottom: 10,
     overflow: "hidden",
   },
   picker: {
-    color: "#FFFFFF",
+    color: Colors.textWhite,
   },
 });

@@ -1,9 +1,10 @@
 import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -13,6 +14,8 @@ import {
 import AddCardModal from "../../../components/AddCardModal";
 import CardEntity from "../../../components/CardEntity";
 import EditCardModal from "../../../components/EditCardModal";
+import { Colors } from "../../../constants/theme";
+import { useRefresh } from "../../../hooks/useRefresh";
 import { api } from "../../../utils/api";
 
 export default function BinderDetailScreen() {
@@ -35,7 +38,6 @@ export default function BinderDetailScreen() {
   const getBinder = async () => {
     try {
       const data = await api.get(`/binder/${id}`);
-      console.log("Binder data: ", data);
       setBinder(data);
       setLoading(false);
     } catch (err) {
@@ -48,11 +50,16 @@ export default function BinderDetailScreen() {
     try {
       const data = await api.get(`/binder_card?binder_id=${id}`);
       setCards(data);
-      console.log(data);
     } catch (err) {
       console.log("getCards error:", err);
     }
   };
+
+  const fetchAll = useCallback(async () => {
+    await Promise.all([getBinder(), getCards()]);
+  }, [id]);
+
+  const { refreshing, onRefresh } = useRefresh(fetchAll);
 
   const handleLongPress = (cardId) => {
     if (!editMode) {
@@ -198,6 +205,14 @@ export default function BinderDetailScreen() {
             data={cards}
             numColumns={4}
             keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#8340BF"]}
+                progressBackgroundColor="#2A2A2A"
+              />
+            }
             renderItem={({ item }) => (
               <CardEntity
                 item={item}
@@ -274,16 +289,16 @@ export default function BinderDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1A1A1A" },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 16,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#ff7b00",
+    borderBottomColor: Colors.primary,
     gap: 12,
   },
   backBtn: { padding: 4 },
@@ -294,28 +309,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   nameAndTags: { flex: 1 },
-  name: { color: "#FFFFFF", fontSize: 16, fontWeight: "500" },
-  value: { color: "#ffc300", fontSize: 20, fontWeight: "500" },
+  name: { color: Colors.textWhite, fontSize: 16, fontWeight: "500" },
+  value: { color: Colors.primaryLight, fontSize: 20, fontWeight: "500" },
   binderTags: { flexDirection: "row", gap: 6 },
   game: {
-    color: "#ffc300",
-    backgroundColor: "#333",
+    color: Colors.primaryLight,
+    backgroundColor: Colors.borderDark,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
     fontSize: 10,
     borderWidth: 0.5,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
   },
   set: {
-    color: "#9CA3AF",
-    backgroundColor: "#333",
+    color: Colors.textMuted,
+    backgroundColor: Colors.borderDark,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
     fontSize: 10,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
   editBtn: { padding: 4 },
   searchBar: { flexDirection: "row", padding: 12, gap: 8 },
@@ -323,20 +338,20 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 8,
     gap: 8,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
-  searchTool: { flex: 1, color: "#FFFFFF", fontSize: 14 },
+  searchTool: { flex: 1, color: Colors.textWhite, fontSize: 14 },
   filterButton: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 8,
     borderWidth: 0.5,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     justifyContent: "center",
   },
   tabs: {
@@ -350,23 +365,23 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     alignItems: "center",
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
   },
-  activeTab: { backgroundColor: "#ff7b00" },
-  tabText: { color: "#9CA3AF", fontWeight: "500" },
-  activeTabText: { color: "#fff" },
+  activeTab: { backgroundColor: Colors.primary },
+  tabText: { color: Colors.textMuted, fontWeight: "500" },
+  activeTabText: { color: Colors.textWhite },
   content: { flex: 1, paddingHorizontal: 16 },
   bottomBar: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#ff7b00",
+    borderTopColor: Colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 20,
     paddingBottom: 36,
     alignItems: "center",
   },
   addBtn: {
-    backgroundColor: "#ff7b00",
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 48,
@@ -378,26 +393,26 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     flex: 1,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
   cancelBtnText: {
-    color: "#9CA3AF",
+    color: Colors.textMuted,
     fontWeight: "500",
   },
   deleteBtn: {
     flex: 1,
-    backgroundColor: "#d00000",
+    backgroundColor: Colors.error,
     borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
   },
   deleteBtnText: {
-    color: "#fff",
+    color: Colors.textWhite,
     fontWeight: "500",
   },
 });

@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Colors } from "../constants/theme";
 
 export default function CardEntity({ item, onLongPress, onPress, isSelected }) {
   return (
@@ -48,14 +49,14 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   card: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     overflow: "hidden",
     borderWidth: 1.5,
   },
   picBorder: {
     borderBottomWidth: 0.5,
-    borderBottomColor: "#444",
+    borderBottomColor: Colors.border,
   },
   pic: {
     width: "100%",
@@ -64,21 +65,21 @@ const styles = StyleSheet.create({
   placeholder: {
     width: "100%",
     aspectRatio: 0.71,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
   info: {
     padding: 4,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
   },
   name: {
-    color: "#FFFFFF",
+    color: Colors.textWhite,
     fontSize: 12,
     fontWeight: "500",
   },
   value: {
-    color: "#ffc300",
+    color: Colors.primaryLight,
     fontSize: 11,
     marginTop: 2,
   },

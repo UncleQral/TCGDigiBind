@@ -2,7 +2,6 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import ImageCropPicker from "react-native-image-crop-picker";
 import { useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -13,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import ImageCropPicker from "react-native-image-crop-picker";
+import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
 import SelectModal from "./SelectModal";
 
@@ -112,13 +113,8 @@ export default function AddCardModal({ visible, onClose, binder }) {
     try {
       const params = new URLSearchParams();
       const gameObj = games.find((g) => g.name === binder?.game);
-      console.log("searchText:", searchText);
-      console.log("gameObj:", gameObj);
-      console.log("binder.game:", binder?.game);
       if (gameObj) params.append("game_id", gameObj.id);
       if (searchText) params.append("name", searchText);
-
-      console.log("URL:", `/card/search?${params.toString()}`);
       const data = await api.get(`/card/search?${params.toString()}`);
       if (binderExpansion) {
         setSearchResults(
@@ -198,7 +194,10 @@ export default function AddCardModal({ visible, onClose, binder }) {
             {/* Photo left */}
             <View style={styles.imageContainer}>
               <TouchableOpacity
-                style={[styles.imagePlaceholder, { aspectRatio: imageAspectRatio }]}
+                style={[
+                  styles.imagePlaceholder,
+                  { aspectRatio: imageAspectRatio },
+                ]}
                 onPress={pickImage}
               >
                 {image ? (
@@ -389,74 +388,74 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 12 },
   footerBtn: { paddingVertical: 12, gap: 8 },
   cmFooterBtn: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 10,
     padding: 12,
     alignItems: "center",
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
-  cmFooterBtnText: { color: "#9CA3AF", fontSize: 13 },
+  cmFooterBtnText: { color: Colors.textMuted, fontSize: 13 },
   topRow: { flexDirection: "row", gap: 12, marginBottom: 16, paddingTop: 8 },
   imageContainer: { width: 90, gap: 8 },
   imagePlaceholder: {
     width: 90,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
   },
   cardImage: { width: 90, height: "100%", borderRadius: 12 },
   cameraBtn: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 6,
     borderWidth: 0.5,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     alignItems: "center",
   },
   inputContainer: { flex: 1, gap: 8 },
   readOnlyField: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 10,
     borderWidth: 0.5,
-    borderColor: "#333",
+    borderColor: Colors.borderDark,
   },
-  readOnlyLabel: { color: "#9CA3AF", fontSize: 10, marginBottom: 2 },
-  readOnlyValue: { color: "#fff", fontSize: 13 },
+  readOnlyLabel: { color: Colors.textMuted, fontSize: 10, marginBottom: 2 },
+  readOnlyValue: { color: Colors.textWhite, fontSize: 13 },
   input: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     padding: 10,
     borderWidth: 0.5,
-    borderColor: "#444",
-    color: "#fff",
+    borderColor: Colors.border,
+    color: Colors.textWhite,
     fontSize: 13,
   },
   resultsList: { flex: 1, marginBottom: 12 },
   resultItem: {
     padding: 12,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderRadius: 8,
     marginBottom: 8,
     borderWidth: 0.5,
-    borderColor: "#333",
+    borderColor: Colors.borderDark,
   },
-  resultItemSelected: { borderColor: "#ff7b00", borderWidth: 1 },
-  resultName: { color: "#fff", fontSize: 13, fontWeight: "500" },
-  resultSet: { color: "#9CA3AF", fontSize: 11, marginTop: 2 },
+  resultItemSelected: { borderColor: Colors.primary, borderWidth: 1 },
+  resultName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
+  resultSet: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
   addBtn: {
-    backgroundColor: "#ff7b00",
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 14,
     alignItems: "center",
   },
-  addBtnDisabled: { backgroundColor: "#555" },
-  addBtnText: { color: "#fff", fontWeight: "500", fontSize: 15 },
+  addBtnDisabled: { backgroundColor: Colors.border },
+  addBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
   resultHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -464,7 +463,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   resultPrice: {
-    color: "#ffc300",
+    color: Colors.primaryLight,
     fontSize: 14,
     fontWeight: "500",
   },
@@ -481,11 +480,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   priceLabel: {
-    color: "#9CA3AF",
+    color: Colors.textMuted,
     fontSize: 10,
   },
   priceValue: {
-    color: "#fff",
+    color: Colors.textWhite,
     fontSize: 12,
   },
   resultActions: {
@@ -494,20 +493,20 @@ const styles = StyleSheet.create({
   },
   selectBtn: {
     flex: 1,
-    backgroundColor: "#333",
+    backgroundColor: Colors.borderDark,
     borderRadius: 6,
     padding: 8,
     alignItems: "center",
   },
   selectBtnActive: {
-    backgroundColor: "#ff7b00",
+    backgroundColor: Colors.primary,
   },
   selectBtnText: {
-    color: "#9CA3AF",
+    color: Colors.textMuted,
     fontSize: 12,
   },
   selectBtnTextActive: {
-    color: "#000",
+    color: Colors.textWhite,
     fontWeight: "500",
   },
 });

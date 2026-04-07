@@ -1,8 +1,9 @@
 import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -11,6 +12,9 @@ import {
 } from "react-native";
 import BinderEntity from "../../components/BinderCard";
 import CreateBinderModal from "../../components/CreateBinderModal";
+import { Colors } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
+import { useRefresh } from "../../hooks/useRefresh";
 import { api } from "../../utils/api";
 
 export default function Homescreen() {
@@ -23,10 +27,12 @@ export default function Homescreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBinders, setSelectedBinders] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const router = useRouter();
 
-  const getBinders = async () => {
+  const getBinders = useCallback(async () => {
     try {
       const data = await api.get("/binder");
       setBinders(data);
@@ -40,7 +46,9 @@ export default function Homescreen() {
       setLoading(false);
       console.log(err);
     }
-  };
+  }, []);
+
+  const { refreshing, onRefresh } = useRefresh(getBinders);
 
   const handleLongPress = (id) => {
     setSelectionMode(true);
@@ -85,8 +93,15 @@ export default function Homescreen() {
           <Text style={styles.headerLabel}>Total Value</Text>
           <Text style={styles.headerValue}>€ {totalValue.toFixed(2)}</Text>
         </View>
-        <TouchableOpacity style={styles.profileIcon}>
-          <Ionicons name="person-circle-outline" size={38} color="#ff7b00" />
+        <TouchableOpacity
+          style={styles.profileIcon}
+          onPress={() => setProfileMenuOpen(true)}
+        >
+          <Ionicons
+            name="person-circle-outline"
+            size={38}
+            color={Colors.primaryLight}
+          />
         </TouchableOpacity>
       </View>
 
@@ -119,6 +134,14 @@ export default function Homescreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
         data={binders}
         keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#8340BF"]}
+            progressBackgroundColor="#2A2A2A"
+          />
+        }
         renderItem={({ item }) => (
           <BinderEntity
             item={item}
@@ -194,12 +217,62 @@ export default function Homescreen() {
           getBinders();
         }}
       />
+      {profileMenuOpen && (
+        <TouchableOpacity
+          style={styles.profileOverlay}
+          activeOpacity={1}
+          onPress={() => setProfileMenuOpen(false)}
+        >
+          <View style={styles.profileMenu}>
+            <View style={styles.profileMenuHeader}>
+              <Ionicons
+                name="person-circle-outline"
+                size={48}
+                color={Colors.primaryLight}
+              />
+              <View>
+                <Text style={styles.profileMenuUsername}>{user?.username}</Text>
+                <Text style={styles.profileMenuEmail}>{user?.email}</Text>
+              </View>
+            </View>
+            <View style={styles.profileMenuDivider} />
+            <TouchableOpacity
+              style={styles.profileMenuItem}
+              onPress={() => {
+                setProfileMenuOpen(false);
+                router.push("/(app)/settings");
+              }}
+            >
+              <Ionicons
+                name="settings-outline"
+                size={20}
+                color={Colors.textWhite}
+              />
+              <Text style={styles.profileMenuItemText}>Settings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.profileMenuItem}
+              onPress={() => {
+                setProfileMenuOpen(false);
+                logout();
+              }}
+            >
+              <Ionicons name="log-out-outline" size={20} color={Colors.error} />
+              <Text
+                style={[styles.profileMenuItemText, { color: Colors.error }]}
+              >
+                Logout
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1A1A1A" },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -207,64 +280,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#ff7b00",
+    borderBottomColor: Colors.primary,
   },
-  headerLabel: { color: "#9CA3AF", fontSize: 11 },
-  headerValue: { color: "#ffc300", fontSize: 20, fontWeight: "500" },
+  headerLabel: { color: Colors.textMuted, fontSize: 11 },
+  headerValue: { color: Colors.primaryLight, fontSize: 20, fontWeight: "500" },
   profileIcon: {},
   searchBar: { flexDirection: "row", padding: 12, gap: 8 },
   searchInputContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 8,
     gap: 8,
     borderWidth: 0.5,
-    borderColor: "#444",
+    borderColor: Colors.border,
   },
-  searchTool: { flex: 1, color: "#FFFFFF", fontSize: 14 },
+  searchTool: { flex: 1, color: Colors.textWhite, fontSize: 14 },
   filterButton: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderRadius: 8,
     padding: 8,
     borderWidth: 0.5,
-    borderColor: "#ff7b00",
+    borderColor: Colors.primary,
     justifyContent: "center",
   },
   binderList: { flex: 1, paddingHorizontal: 20 },
   bottomBar: {
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#ff7b00",
+    borderTopColor: Colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 20,
     paddingBottom: 36,
     alignItems: "center",
   },
   addBtn: {
-    backgroundColor: "#ff7b00",
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 48,
   },
-  addBtnText: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+  addBtnText: { color: Colors.textWhite, fontSize: 20, fontWeight: "bold" },
   addContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: "#2A2A2A",
+    backgroundColor: Colors.surface,
   },
   productBinder: {
     flex: 1,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderWidth: 1,
-    borderColor: "#ffc300",
+    borderColor: Colors.primaryLight,
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
@@ -272,7 +345,7 @@ const styles = StyleSheet.create({
   closeAddBtn: {
     width: 44,
     height: 44,
-    backgroundColor: "#333",
+    backgroundColor: Colors.borderDark,
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
@@ -280,27 +353,27 @@ const styles = StyleSheet.create({
   },
   cardBinder: {
     flex: 1,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: Colors.background,
     borderWidth: 1,
-    borderColor: "#ffc300",
+    borderColor: Colors.primaryLight,
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
   },
   optionText: {
-    color: "#ffffff",
+    color: Colors.textWhite,
     fontWeight: "500",
   },
   cancelBtn: {
     flex: 1,
-    backgroundColor: "#333",
+    backgroundColor: Colors.borderDark,
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
   },
   deleteBtn: {
     flex: 1,
-    backgroundColor: "#d00000",
+    backgroundColor: Colors.error,
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
@@ -308,5 +381,56 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginLeft: 10,
+  },
+  profileOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  },
+  profileMenu: {
+    position: "absolute",
+    top: 90,
+    right: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+    minWidth: 220,
+    zIndex: 101,
+    elevation: 8,
+  },
+  profileMenuHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+  profileMenuUsername: {
+    color: Colors.textWhite,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  profileMenuEmail: {
+    color: Colors.textMuted,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  profileMenuDivider: {
+    height: 0.5,
+    backgroundColor: Colors.border,
+    marginHorizontal: 12,
+  },
+  profileMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+  profileMenuItemText: {
+    color: Colors.textWhite,
+    fontSize: 15,
   },
 });
