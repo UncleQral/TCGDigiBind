@@ -9,6 +9,7 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { SettingsProvider, useSetting } from "@/context/SettingsContext";
 
 export const unstable_settings = {
   anchor: "(auth)",
@@ -32,12 +33,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
+        <SettingsProvider>
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
           <RootNavigation />
           <StatusBar style="auto" />
         </ThemeProvider>
+        </SettingsProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );
