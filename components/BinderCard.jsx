@@ -8,6 +8,12 @@ export default function BinderEntity({
   onPress,
   isSelected,
 }) {
+  const { tagColors } = useSetting();
+
+  const tagColor =
+    (tagColors || []).find((tc) => tc.game_id === item.game_id)?.color ||
+    Colors.primary;
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -24,7 +30,14 @@ export default function BinderEntity({
           <Text style={styles.binderName}>{item.name}</Text>
 
           <View style={styles.binderTags}>
-            <Text style={styles.binderGame}>{item.game}</Text>
+            <Text
+              style={[
+                styles.binderGame,
+                { color: tagColor, borderColor: tagColor },
+              ]}
+            >
+              {item.game}
+            </Text>
             <Text style={styles.binderSet}>{item.binder_set}</Text>
           </View>
         </View>

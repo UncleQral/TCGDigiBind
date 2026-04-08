@@ -16,7 +16,7 @@ router.get("/", auth, async (req, res) => {
       LEFT JOIN binder_card bc ON bc.binder_id = b.id
       LEFT JOIN card_price cp ON cp.card_id = bc.card_id
       WHERE b.user_id = ?
-      GROUP BY b.id`,
+      GROUP BY b.id, g.id`,
       [user_id],
     );
 
@@ -39,7 +39,7 @@ router.get("/:id", auth, async (req, res) => {
       LEFT JOIN binder_card bc ON bc.binder_id = b.id
       LEFT JOIN card_price cp ON cp.card_id = bc.card_id
       WHERE b.id = ? AND b.user_id = ?
-      GROUP BY b.id`,
+      GROUP BY b.id, g.id`,
       [id, user_id],
     );
 
