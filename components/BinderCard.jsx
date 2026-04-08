@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Colors } from "../constants/theme";
+import { useSetting } from "../context/SettingsContext";
 
 export default function BinderEntity({
   item,

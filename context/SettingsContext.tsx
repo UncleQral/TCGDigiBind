@@ -24,7 +24,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
   const getColors = async () => {
     const colors = await api.get("/tag_color");
-    setTagColors(colors);
+    if (Array.isArray(colors)) {
+      setTagColors(colors);
+    }
   };
 
   const updateTagColor = async (game_id: number, color: string) => {

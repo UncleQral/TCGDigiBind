@@ -1,5 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+    BottomSheetView,
+    useBottomSheetSpringConfigs,
+} from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -9,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { runOnJS } from "react-native-reanimated";
 import ColorPicker, {
     BrightnessSlider,
     HueSlider,
@@ -18,8 +22,18 @@ import ColorPicker, {
 import { Colors } from "../../constants/theme";
 import { useSetting } from "../../context/SettingsContext";
 import { api } from "../../utils/api";
+import renderBackdrop from "../../utils/renderBackdrop";
+
+const springConfigs = {
+  damping: 80,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.1,
+  restSpeedThreshold: 0.1,
+  stiffness: 500,
+};
 
 export default function SettingsScreen() {
+  const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [pickedGame, setPickedGame] = useState("");
   const [colorModalOpen, setColorModalOpen] = useState(false);
 
@@ -42,6 +56,7 @@ export default function SettingsScreen() {
     getGames();
   }, []);
 
+  console.log("tagColors in settings:", tagColors);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -58,7 +73,7 @@ export default function SettingsScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const color =
-            tagColors.find((tc) => tc.game_id === item.id)?.color ||
+            (tagColors || []).find((tc) => tc.game_id === item.id)?.color ||
             Colors.primary;
           return (
             <TouchableOpacity
@@ -80,6 +95,9 @@ export default function SettingsScreen() {
         snapPoints={["60%"]}
         onClose={() => setColorModalOpen(false)}
         enablePanDownToClose
+        animateOnMount
+        animationConfigs={animationConfigs}
+        backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: Colors.surface }}
         handleIndicatorStyle={{ backgroundColor: Colors.primary }}
       >
@@ -91,8 +109,9 @@ export default function SettingsScreen() {
                 styles.previewTag,
                 {
                   backgroundColor:
-                    tagColors.find((tc) => tc.game_id === pickedGame?.id)
-                      ?.color || Colors.primary,
+                    (tagColors || []).find(
+                      (tc) => tc.game_id === pickedGame?.id,
+                    )?.color || Colors.primary,
                 },
               ]}
             >
@@ -102,10 +121,13 @@ export default function SettingsScreen() {
 
           <ColorPicker
             value={
-              tagColors.find((tc) => tc.game_id === pickedGame?.id)?.color ||
-              Colors.primary
+              (tagColors || []).find((tc) => tc.game_id === pickedGame?.id)
+                ?.color || Colors.primary
             }
-            onComplete={({ hex }) => updateTagColor(pickedGame?.id, hex)}
+            onComplete={({ hex }) => {
+              "worklet";
+              runOnJS(updateTagColor)(pickedGame?.id, hex);
+            }}
           >
             <Preview />
             <HueSlider style={{ marginTop: 16 }} />
@@ -115,7 +137,10 @@ export default function SettingsScreen() {
 
           <TouchableOpacity
             style={styles.saveBtn}
-            onPress={() => setColorModalOpen(false)}
+            onPress={() => {
+              setColorModalOpen(false);
+              bottomSheetRef.current?.close();
+            }}
           >
             <Text style={styles.saveBtnText}>Save</Text>
           </TouchableOpacity>

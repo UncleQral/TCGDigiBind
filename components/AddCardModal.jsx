@@ -1,6 +1,7 @@
 import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetTextInput,
+  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -15,9 +16,19 @@ import {
 import ImageCropPicker from "react-native-image-crop-picker";
 import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
+import renderBackdrop from "../utils/renderBackdrop";
 import SelectModal from "./SelectModal";
 
+const springConfigs = {
+  damping: 80,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.1,
+  restSpeedThreshold: 0.1,
+  stiffness: 500,
+};
+
 export default function AddCardModal({ visible, onClose, binder }) {
+  const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [cardName, setCardName] = useState("");
   const [image, setImage] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
@@ -179,6 +190,9 @@ export default function AddCardModal({ visible, onClose, binder }) {
         resetModal();
       }}
       enablePanDownToClose
+      animateOnMount
+      animationConfigs={animationConfigs}
+      backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
       keyboardBehavior="extend"

@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet, {
   BottomSheetTextInput,
   BottomSheetView,
+  useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -15,9 +16,19 @@ import {
 import ImageCropPicker from "react-native-image-crop-picker";
 import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
+import renderBackdrop from "../utils/renderBackdrop";
 import SelectModal from "./SelectModal";
 
+const springConfigs = {
+  damping: 80,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.1,
+  restSpeedThreshold: 0.1,
+  stiffness: 500,
+};
+
 export default function BinderCreationModal({ visible, onClose }) {
+  const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [binderName, setBinderName] = useState("");
   const [binderGameId, setBinderGameId] = useState(null);
   const [binderSetId, setBinderSetId] = useState(null);
@@ -110,6 +121,9 @@ export default function BinderCreationModal({ visible, onClose }) {
       snapPoints={["75%"]}
       onClose={onClose}
       enablePanDownToClose
+      animateOnMount
+      animationConfigs={animationConfigs}
+      backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: "#2A2A2A" }}
       handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
       keyboardBehavior="extend"

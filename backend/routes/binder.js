@@ -9,9 +9,10 @@ router.get("/", auth, async (req, res) => {
     const user_id = req.user.id;
 
     const results = await query(
-      `SELECT b.*, 
+      `SELECT b.*, g.id as game_id, 
         COALESCE(SUM(cp.trend_price), 0) as total_value
       FROM binder b
+      LEFT JOIN game g ON b.game = g.name
       LEFT JOIN binder_card bc ON bc.binder_id = b.id
       LEFT JOIN card_price cp ON cp.card_id = bc.card_id
       WHERE b.user_id = ?
@@ -31,9 +32,10 @@ router.get("/:id", auth, async (req, res) => {
     const user_id = req.user.id;
 
     const results = await query(
-      `SELECT b.*, 
+      `SELECT b.*, g.id as game_id,
         COALESCE(SUM(cp.trend_price), 0) as total_value
       FROM binder b
+      LEFT JOIN game g ON b.game = g.name
       LEFT JOIN binder_card bc ON bc.binder_id = b.id
       LEFT JOIN card_price cp ON cp.card_id = bc.card_id
       WHERE b.id = ? AND b.user_id = ?

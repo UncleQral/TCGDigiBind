@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomSheet, {
     BottomSheetTextInput,
     BottomSheetView,
+    useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -17,8 +18,18 @@ import {
 import ImageCropPicker from "react-native-image-crop-picker";
 import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
+import renderBackdrop from "../utils/renderBackdrop";
+
+const springConfigs = {
+  damping: 80,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.1,
+  restSpeedThreshold: 0.1,
+  stiffness: 500,
+};
 
 export default function EditCardModal({ visible, onClose, item }) {
+  const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [activeTab, setActiveTab] = useState("card");
   const [customName, setCustomName] = useState("");
   const [image, setImage] = useState(null);
@@ -130,6 +141,9 @@ export default function EditCardModal({ visible, onClose, item }) {
         snapPoints={["85%"]}
         onClose={onClose}
         enablePanDownToClose
+        animateOnMount
+        animationConfigs={animationConfigs}
+        backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: "#2A2A2A" }}
         handleIndicatorStyle={{ backgroundColor: "#ff7b00" }}
         keyboardBehavior="extend"
