@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     createContext,
     ReactNode,
@@ -6,6 +7,8 @@ import {
     useState,
 } from "react";
 import { api } from "../utils/api";
+
+const TAG_COLORS_KEY = "tag_colors_cache";
 
 type TagColor = {
   game_id: number;
@@ -26,15 +29,19 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const colors = await api.get("/tag_color");
     if (Array.isArray(colors)) {
       setTagColors(colors);
+      AsyncStorage.setItem(TAG_COLORS_KEY, JSON.stringify(colors));
     }
   };
 
   const updateTagColor = async (game_id: number, color: string) => {
-    const results = await api.post("/tag_color", { game_id, color });
+    await api.post("/tag_color", { game_id, color });
     getColors();
   };
 
   useEffect(() => {
+    AsyncStorage.getItem(TAG_COLORS_KEY).then((cached) => {
+      if (cached) setTagColors(JSON.parse(cached));
+    });
     getColors();
   }, []);
 

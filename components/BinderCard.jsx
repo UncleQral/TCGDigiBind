@@ -11,7 +11,7 @@ export default function BinderEntity({
   const { tagColors } = useSetting();
 
   const tagColor =
-    (tagColors || []).find((tc) => tc.game_id === item.game_id)?.color ||
+    (tagColors || []).find((tc) => tc.game_id == item.game_id)?.color ||
     Colors.primary;
 
   return (
@@ -33,7 +33,11 @@ export default function BinderEntity({
             <Text
               style={[
                 styles.binderGame,
-                { color: tagColor, borderColor: tagColor },
+                {
+                  color: tagColor,
+                  borderColor: tagColor,
+                  backgroundColor: tagColor + "22",
+                },
               ]}
             >
               {item.game}
