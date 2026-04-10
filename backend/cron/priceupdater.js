@@ -89,6 +89,11 @@ const processFiles = async () => {
       cardRows.map((row) => [row.cardmarket_id, row.card_id]),
     );
 
+    const sealedRows = await query("SELECT id, cardmarket_id FROM sealed_prod");
+    const sealedmarketToId = new Map(
+      sealedRows.map((row) => [row.cardmarket_id, row.id]),
+    );
+
     const files = fs.readdirSync(path.join(__dirname, "../downloads"));
 
     for (const file of files) {
@@ -99,11 +104,13 @@ const processFiles = async () => {
       const data = JSON.parse(content);
       const date = new Date(data.createdAt).toISOString().split("T")[0];
 
-      const rows = [];
+      const cardRows = [];
+      const sealedRows = [];
+
       for (const entry of data.priceGuides) {
         const cardId = cardmarketToId.get(entry.idProduct);
         if (cardId !== undefined) {
-          rows.push([
+          cardRows.push([
             cardId,
             entry.avg,
             entry.low,
@@ -119,11 +126,26 @@ const processFiles = async () => {
             entry["avg30-foil"],
             date,
           ]);
+          continue;
+        }
+
+        const sealedId = sealedmarketToId.get(entry.idProduct);
+        if (sealedId !== undefined) {
+          sealedRows.push([
+            sealedId,
+            entry.avg,
+            entry.low,
+            entry.trend,
+            entry.avg1,
+            entry.avg7,
+            entry.avg30,
+            date,
+          ]);
         }
       }
 
-      for (let i = 0; i < rows.length; i += 1000) {
-        const chunk = rows.slice(i, i + 1000);
+      for (let i = 0; i < cardRows.length; i += 1000) {
+        const chunk = cardRows.slice(i, i + 1000);
         await query(
           `INSERT INTO card_price (card_id, avg_sell, low_price, trend_price, avg1, avg7, avg30, foil_sell, foil_low, foil_trend, foil_avg1, foil_avg7, foil_avg30, date)
            VALUES ?
@@ -137,8 +159,21 @@ const processFiles = async () => {
         );
       }
 
+      for (let i = 0; i < sealedRows.length; i += 1000) {
+        const chunk = sealedRows.slice(i, i + 1000);
+        await query(
+          `INSERT INTO sealed_price (sealed_id, avg_sell, low_price, trend_price, avg1, avg7, avg30, date)
+           VALUES ?
+           ON DUPLICATE KEY UPDATE
+           avg_sell = VALUES(avg_sell), low_price = VALUES(low_price), trend_price = VALUES(trend_price),
+           avg1 = VALUES(avg1), avg7 = VALUES(avg7), avg30 = VALUES(avg30),
+           date = VALUES(date)`,
+          [chunk],
+        );
+      }
+
       fs.unlinkSync(path.join(__dirname, "../downloads", file));
-      console.log(`${file}: ${rows.length} prices inserted!`);
+      console.log(`${file}: ${cardRows.length} card prices, ${sealedRows.length} sealed prices inserted!`);
     }
   } catch (err) {
     console.error("Price update error: ", err);

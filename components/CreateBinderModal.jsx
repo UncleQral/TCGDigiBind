@@ -27,7 +27,7 @@ const springConfigs = {
   stiffness: 500,
 };
 
-export default function BinderCreationModal({ visible, onClose }) {
+export default function CreateBinderModal({ visible, onClose }) {
   const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [binderName, setBinderName] = useState("");
   const [binderGameId, setBinderGameId] = useState(null);

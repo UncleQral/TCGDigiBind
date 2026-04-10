@@ -15,6 +15,7 @@ import AddCardModal from "../../../components/AddCardModal";
 import CardEntity from "../../../components/CardEntity";
 import EditCardModal from "../../../components/EditCardModal";
 import { Colors } from "../../../constants/theme";
+import { useSetting } from "../../../context/SettingsContext";
 import { useRefresh } from "../../../hooks/useRefresh";
 import { api } from "../../../utils/api";
 
@@ -103,6 +104,11 @@ export default function BinderDetailScreen() {
     getCards();
   }, []);
 
+  const { tagColors } = useSetting();
+  const tagColor =
+    (tagColors || []).find((tc) => tc.game_id == binder?.game_id)?.color ||
+    Colors.primary;
+
   if (loading) {
     return (
       <View
@@ -129,7 +135,18 @@ export default function BinderDetailScreen() {
             <View style={styles.nameAndTags}>
               <Text style={styles.name}>{binder?.name}</Text>
               <View style={styles.binderTags}>
-                <Text style={styles.game}>{binder?.game}</Text>
+                <Text
+                  style={[
+                    styles.game,
+                    {
+                      color: tagColor,
+                      borderColor: tagColor,
+                      backgroundColor: tagColor + "22",
+                    },
+                  ]}
+                >
+                  {binder?.game}
+                </Text>
                 <Text style={styles.set}>{binder?.binder_set}</Text>
               </View>
             </View>

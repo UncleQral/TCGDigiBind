@@ -50,6 +50,7 @@ require("./cron/setups/setupsets.js");
 require("./cron/setups/setuprarities.js");
 require("./cron/downloadproducts.js");
 require("./cron/importcards.js");
+require("./cron/importnonsingles.js");
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Connection Succsessfully");

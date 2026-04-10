@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import BinderEntity from "../../components/BinderCard";
 import CreateBinderModal from "../../components/CreateBinderModal";
+import CreateMenuModal from "../../components/CreateMenuModal";
 import { Colors } from "../../constants/theme";
 import { useAuth } from "../../context/AuthContext";
 import { useRefresh } from "../../hooks/useRefresh";
@@ -19,22 +20,23 @@ import { api } from "../../utils/api";
 
 export default function Homescreen() {
   const [binders, setBinders] = useState([]);
-  const [showOptions, setShowOptions] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterActive, setFilterActive] = useState(false);
-  const [showBinderModal, setShowBinderModal] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBinders, setSelectedBinders] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const [showCreateMenuModal, setCreateMenuModal] = useState(false);
+  const [showBinderModal, setShowBinderModal] = useState(false);
 
   const router = useRouter();
 
   const getBinders = useCallback(async () => {
     try {
       const data = await api.get("/binder");
+      if (!Array.isArray(data)) return;
       setBinders(data);
       const total = data.reduce(
         (sum, b) => sum + parseFloat(b.total_value || 0),
@@ -175,48 +177,15 @@ export default function Homescreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : showOptions ? (
-          <View style={styles.addContainer}>
-            <TouchableOpacity
-              style={styles.productBinder}
-              onPress={() => router.push("/(app)/createProduct")}
-            >
-              <Text style={styles.optionText}>Product Binder</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.closeAddBtn}
-              onPress={() => setShowOptions(false)}
-            >
-              <Text style={styles.optionText}>x</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cardBinder}
-              onPress={() => {
-                setShowOptions(false);
-                setShowBinderModal(true);
-              }}
-            >
-              <Text style={styles.optionText}>Card Binder</Text>
-            </TouchableOpacity>
-          </View>
         ) : (
           <TouchableOpacity
             style={styles.addBtn}
-            onPress={() => setShowOptions(!showOptions)}
+            onPress={() => setCreateMenuModal(true)}
           >
             <Text style={styles.addBtnText}>+</Text>
           </TouchableOpacity>
         )}
       </View>
-      <CreateBinderModal
-        visible={showBinderModal}
-        onClose={() => {
-          setShowBinderModal(false);
-          getBinders();
-        }}
-      />
       {profileMenuOpen && (
         <TouchableOpacity
           style={styles.profileOverlay}
@@ -267,6 +236,19 @@ export default function Homescreen() {
           </View>
         </TouchableOpacity>
       )}
+      <CreateMenuModal
+        visible={showCreateMenuModal}
+        onClose={() => setCreateMenuModal(false)}
+        onCreateBinder={() => {
+          console.log("onCreateBinder called");
+          setCreateMenuModal(false);
+          setShowBinderModal(true);
+        }}
+      />
+      <CreateBinderModal
+        visible={showBinderModal}
+        onClose={() => setShowBinderModal(false)}
+      />
     </View>
   );
 }
@@ -325,41 +307,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
   },
   addBtnText: { color: Colors.textWhite, fontSize: 20, fontWeight: "bold" },
-  addContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: Colors.surface,
-  },
-  productBinder: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.primaryLight,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-  },
-  closeAddBtn: {
-    width: 44,
-    height: 44,
-    backgroundColor: Colors.borderDark,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 10,
-  },
-  cardBinder: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.primaryLight,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-  },
   optionText: {
     color: Colors.textWhite,
     fontWeight: "500",
