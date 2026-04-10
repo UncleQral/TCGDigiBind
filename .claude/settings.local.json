@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"^[ \\\\t]*//[a-zA-Z]\" --include=\"*.js\" . --exclude-dir=node_modules)"
+    ]
+  }
+}

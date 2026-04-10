@@ -18,8 +18,8 @@ app.use("/user", userRouter);
 const cardRouter = require("./routes/card.js");
 app.use("/card", cardRouter);
 
-const sealedRouter = require("./routes/sealedprod.js");
-app.use("/sealed_prod", sealedRouter);
+const sealedRouter = require("./routes/sealed.js");
+app.use("/sealed", sealedRouter);
 
 const bindercardRouter = require("./routes/binder_card.js");
 app.use("/binder_card", bindercardRouter);

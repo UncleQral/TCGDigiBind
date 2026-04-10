@@ -78,6 +78,4 @@ nodecron.schedule("0 5 1 * *", async () => {
   await processNonSingles();
 });
 
-//processNonSingles();
-
 module.exports = { processNonSingles };

@@ -180,5 +180,3 @@ const processFiles = async () => {
   }
 };
 
-//testRun();
-//processFiles();

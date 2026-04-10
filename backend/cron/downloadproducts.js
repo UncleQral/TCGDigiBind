@@ -76,6 +76,4 @@ nodecron.schedule("0 4 1 * *", async () => {
   await downloadProducts();
 });
 
-//downloadProducts();
-
 module.exports = { downloadProducts };

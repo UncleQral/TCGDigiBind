@@ -93,6 +93,4 @@ nodecron.schedule("0 6 1 * *", async () => {
   await runSetup();
 });
 
-//runSetup();
-
 module.exports = { runSetup };

@@ -100,6 +100,4 @@ nodecron.schedule("0 7 1 * *", async () => {
   await runRaritySetup();
 });
 
-//runRaritySetup();
-
 module.exports = { runRaritySetup };

@@ -64,6 +64,4 @@ nodecron.schedule("0 5 1 * *", async () => {
   await processCards();
 });
 
-//processCards();
-
 module.exports = { processCards };
