@@ -5,11 +5,12 @@ import BottomSheet, {
     useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Colors } from "../constants/theme";
 import renderBackdrop from "../utils/renderBackdrop";
+import AddItemModal from "./AddItemModal";
 
 const springConfigs = {
   damping: 80,
@@ -19,10 +20,12 @@ const springConfigs = {
   stiffness: 500,
 };
 
-export default function CreateMenuModal({ visible, onClose, onCreateBinder }) {
+export default function CreateMenuModal({ visible, onClose, onCreateBinder, onAddItem }) {
   const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const router = useRouter();
   const bottomSheetRef = useRef(null);
+
+  const [showAddItemModal, setAddItemModal] = useState(false);
 
   return (
     <BottomSheet
@@ -66,7 +69,7 @@ export default function CreateMenuModal({ visible, onClose, onCreateBinder }) {
 
           <TouchableOpacity
             style={[styles.btn, { marginBottom: 16 }]}
-            onPress={() => router.push("/(app)/createItem")}
+            onPress={onAddItem}
           >
             <View style={styles.iconBtn}>
               <MaterialCommunityIcons

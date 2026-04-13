@@ -7,6 +7,8 @@ import ImagePickerSection from "../ImagePickerSection";
 import SelectModal from "../SelectModal";
 
 export default function GradedTabContent({
+  binder,
+  games,
   cardName,
   setCardName,
   searchCard,
@@ -21,6 +23,9 @@ export default function GradedTabContent({
   imageAspectRatio,
 }) {
   const [gradingCompanies, setGradingCompanies] = useState([]);
+  const [selectedGameId, setSelectedGameId] = useState(null);
+  const [selectedExpansionId, setSelectedExpansionId] = useState(null);
+  const [expansions, setExpansions] = useState([]);
 
   useEffect(() => {
     api
@@ -31,6 +36,16 @@ export default function GradedTabContent({
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!selectedGameId) return;
+    api
+      .get(`/expansion/${selectedGameId}`)
+      .then((data) => {
+        if (Array.isArray(data)) setExpansions(data);
+      })
+      .catch(() => {});
+  }, [selectedGameId]);
+
   return (
     <View style={styles.topRow}>
       <ImagePickerSection
@@ -40,51 +55,84 @@ export default function GradedTabContent({
       />
 
       <View style={styles.container}>
-      <BottomSheetTextInput
-        style={styles.input}
-        placeholder="Cardname..."
-        placeholderTextColor="#9CA3AF"
-        value={cardName}
-        onChangeText={(text) => {
-          setCardName(text);
-          searchCard(text);
-        }}
-      />
+        {binder ? (
+          <>
+            <View style={styles.readOnlyField}>
+              <Text style={styles.readOnlyLabel}>Game</Text>
+              <Text style={styles.readOnlyValue}>{binder.game || "-"}</Text>
+            </View>
+            <View style={styles.readOnlyField}>
+              <Text style={styles.readOnlyLabel}>Set</Text>
+              <Text style={styles.readOnlyValue}>{binder.binder_set || "-"}</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <SelectModal
+              label="Select Game..."
+              value={selectedGameId}
+              options={(games ?? []).map((g) => ({ label: g.name, value: g.id }))}
+              onSelect={(val) => {
+                setSelectedGameId(val);
+                setSelectedExpansionId(null);
+                setExpansions([]);
+              }}
+            />
+            <SelectModal
+              label="Select Set..."
+              value={selectedExpansionId}
+              options={expansions.map((e) => ({ label: e.name, value: e.id }))}
+              onSelect={setSelectedExpansionId}
+              disabled={!selectedGameId}
+            />
+          </>
+        )}
 
-      <SelectModal
-        label="Grading Company..."
-        value={gradingCompany}
-        options={gradingCompanies.map((c) => ({ label: c.name, value: c.id }))}
-        onSelect={setGradingCompany}
-      />
+        <BottomSheetTextInput
+          style={styles.input}
+          placeholder="Cardname..."
+          placeholderTextColor="#9CA3AF"
+          value={cardName}
+          onChangeText={(text) => {
+            setCardName(text);
+            searchCard(text);
+          }}
+        />
 
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Grade</Text>
-          <BottomSheetTextInput
-            style={styles.input}
-            placeholder="1 – 10"
-            placeholderTextColor="#9CA3AF"
-            value={grade}
-            onChangeText={setGrade}
-            keyboardType="decimal-pad"
-            maxLength={4}
-          />
-        </View>
+        <SelectModal
+          label="Grading Company..."
+          value={gradingCompany}
+          options={gradingCompanies.map((c) => ({ label: c.name, value: c.id }))}
+          onSelect={setGradingCompany}
+        />
 
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Cert Number</Text>
-          <BottomSheetTextInput
-            style={styles.input}
-            placeholder="e.g. 12345678"
-            placeholderTextColor="#9CA3AF"
-            value={certNumber}
-            onChangeText={setCertNumber}
-            keyboardType="number-pad"
-          />
+        <View style={styles.row}>
+          <View style={styles.halfField}>
+            <Text style={styles.label}>Grade</Text>
+            <BottomSheetTextInput
+              style={styles.input}
+              placeholder="1 – 10"
+              placeholderTextColor="#9CA3AF"
+              value={grade}
+              onChangeText={setGrade}
+              keyboardType="decimal-pad"
+              maxLength={4}
+            />
+          </View>
+
+          <View style={styles.halfField}>
+            <Text style={styles.label}>Cert Number</Text>
+            <BottomSheetTextInput
+              style={styles.input}
+              placeholder="e.g. 12345678"
+              placeholderTextColor="#9CA3AF"
+              value={certNumber}
+              onChangeText={setCertNumber}
+              keyboardType="number-pad"
+            />
+          </View>
         </View>
       </View>
-    </View>
     </View>
   );
 }
@@ -92,6 +140,15 @@ export default function GradedTabContent({
 const styles = StyleSheet.create({
   topRow: { flexDirection: "row", gap: 12, marginBottom: 16, paddingTop: 8 },
   container: { flex: 1, gap: 8 },
+  readOnlyField: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 0.5,
+    borderColor: Colors.borderDark,
+  },
+  readOnlyLabel: { color: Colors.textMuted, fontSize: 10, marginBottom: 2 },
+  readOnlyValue: { color: Colors.textWhite, fontSize: 13 },
   row: { flexDirection: "row", gap: 8 },
   halfField: { flex: 1, gap: 4 },
   label: { color: Colors.textMuted, fontSize: 10, paddingLeft: 2 },

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AddItemModal from "../../components/AddItemModal";
 import BinderEntity from "../../components/BinderCard";
 import CreateBinderModal from "../../components/CreateBinderModal";
 import CreateMenuModal from "../../components/CreateMenuModal";
@@ -30,6 +31,7 @@ export default function Homescreen() {
   const { user, logout } = useAuth();
   const [showCreateMenuModal, setCreateMenuModal] = useState(false);
   const [showBinderModal, setShowBinderModal] = useState(false);
+  const [showAddItemModal, setAddItemModal] = useState(false);
 
   const router = useRouter();
 
@@ -244,10 +246,18 @@ export default function Homescreen() {
           setCreateMenuModal(false);
           setShowBinderModal(true);
         }}
+        onAddItem={() => {
+          setCreateMenuModal(false);
+          setAddItemModal(true);
+        }}
       />
       <CreateBinderModal
         visible={showBinderModal}
         onClose={() => setShowBinderModal(false)}
+      />
+      <AddItemModal
+        visible={showAddItemModal}
+        onClose={() => setAddItemModal(false)}
       />
     </View>
   );

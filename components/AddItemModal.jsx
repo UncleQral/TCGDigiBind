@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Image,
   Keyboard,
-  Linking,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -149,20 +148,6 @@ export default function AddItemModal({ visible, onClose, binder }) {
     setCertNumber("");
   };
 
-  const getCardmarketUrl = (item) => {
-    const cardName = item.name.split("[")[0].trim();
-    const gameObj = games.find((g) => g.name === binder?.game);
-    const gameName = gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
-    const setName = item.expansion_name?.replace(/\s+/g, "-") || "";
-    const expansionId =
-      binder?.binder_set && binderExpansion
-        ? binderExpansion.cm_expansion_id
-        : item.cm_expansion_id;
-    const rarityId = selectedRarityObj?.cm_rarity_id ?? "";
-
-    return `https://www.cardmarket.com/en/${gameName}/Products/Singles/${setName}?searchMode=v2&idCategory=51&idExpansion=${expansionId}&idRarity=${rarityId}&searchString=${encodeURIComponent(cardName)}`;
-  };
-
   return (
     <BottomSheet
       ref={bottomSheetRef}
@@ -188,60 +173,106 @@ export default function AddItemModal({ visible, onClose, binder }) {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View>
-            <View style = {styles.tabs}>
-              <TouchableOpacity style ={[styles.tabBtn, activeTab === "card" && styles.activeTabBtn]} onPress={()=>setActiveTab("card")}>
-                <Text style={[styles.tabText, activeTab === "card" && styles.activeTabText]}>Card</Text>
+            <View style={styles.tabs}>
+              <TouchableOpacity
+                style={[
+                  styles.tabBtn,
+                  activeTab === "card" && styles.activeTabBtn,
+                ]}
+                onPress={() => setActiveTab("card")}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "card" && styles.activeTabText,
+                  ]}
+                >
+                  Card
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style ={[styles.tabBtn, activeTab === "sealed" && styles.activeTabBtn]} onPress={()=>setActiveTab("sealed")}>
-                <Text style={[styles.tabText, activeTab === "sealed" && styles.activeTabText]}>Sealed</Text>
+              <TouchableOpacity
+                style={[
+                  styles.tabBtn,
+                  activeTab === "sealed" && styles.activeTabBtn,
+                ]}
+                onPress={() => setActiveTab("sealed")}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "sealed" && styles.activeTabText,
+                  ]}
+                >
+                  Sealed
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style ={[styles.tabBtn, activeTab === "graded" && styles.activeTabBtn]} onPress={()=>setActiveTab("graded")}>
-                <Text style={[styles.tabText, activeTab === "graded" && styles.activeTabText]}>Graded</Text>
+              <TouchableOpacity
+                style={[
+                  styles.tabBtn,
+                  activeTab === "graded" && styles.activeTabBtn,
+                ]}
+                onPress={() => setActiveTab("graded")}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "graded" && styles.activeTabText,
+                  ]}
+                >
+                  Graded
+                </Text>
               </TouchableOpacity>
             </View>
 
             {activeTab === "card" && (
-                <CardTabContent
-                  binder={binder}
-                  rarities={rarities}
-                  selectedRarity={selectedRarity}
-                  setSelectedRarity={setSelectedRarity}
-                  setSelectedRarityObj={setSelectedRarityObj}
-                  cardName={cardName}
-                  setCardName={setCardName}
-                  searchCard={searchCard}
-                  image={image}
-                  onImageChange={applyImage}
-                  imageAspectRatio={imageAspectRatio}
-                />
-              )}
-              {activeTab === "sealed" && (
-                <SealedTabContent
-                  binder={binder}
-                  games={games}
-                  image={image}
-                  onImageChange={applyImage}
-                  imageAspectRatio={imageAspectRatio}
-                />
-              )}
-              {activeTab === "graded" && (
-                <GradedTabContent
-                  cardName={cardName}
-                  setCardName={setCardName}
-                  searchCard={searchCard}
-                  gradingCompany={gradingCompany}
-                  setGradingCompany={setGradingCompany}
-                  grade={grade}
-                  setGrade={setGrade}
-                  certNumber={certNumber}
-                  setCertNumber={setCertNumber}
-                  image={image}
-                  onImageChange={applyImage}
-                  imageAspectRatio={imageAspectRatio}
-                />
-              )}
+              <CardTabContent
+                binder={binder}
+                rarities={rarities}
+                selectedRarity={selectedRarity}
+                setSelectedRarity={setSelectedRarity}
+                setSelectedRarityObj={setSelectedRarityObj}
+                selectedRarityObj={selectedRarityObj}
+                cardName={cardName}
+                setCardName={setCardName}
+                searchCard={searchCard}
+                handleAddCard={handleAddCard}
+                pickCard={pickCard}
+                binderExpansion={binderExpansion}
+                games={games}
+                image={image}
+                onImageChange={applyImage}
+                imageAspectRatio={imageAspectRatio}
+              />
+            )}
+            {activeTab === "sealed" && (
+              <SealedTabContent
+                binder={binder}
+                games={games}
+                image={image}
+                onImageChange={applyImage}
+                imageAspectRatio={imageAspectRatio}
+              />
+            )}
+            {activeTab === "graded" && (
+              <GradedTabContent
+                binder={binder}
+                games={games}
+                cardName={cardName}
+                setCardName={setCardName}
+                searchCard={searchCard}
+                gradingCompany={gradingCompany}
+                setGradingCompany={setGradingCompany}
+                grade={grade}
+                setGrade={setGrade}
+                certNumber={certNumber}
+                setCertNumber={setCertNumber}
+                image={image}
+                onImageChange={applyImage}
+                imageAspectRatio={imageAspectRatio}
+              />
+            )}
           </View>
         }
         renderItem={({ item }) => {
@@ -305,73 +336,12 @@ export default function AddItemModal({ visible, onClose, binder }) {
             </View>
           );
         }}
-        ListEmptyComponent={
-          <Text
-            style={{ color: "#9CA3AF", textAlign: "center", marginTop: 12 }}
-          >
-            {cardName ? "No Card found" : "Cardname..."}
-          </Text>
-        }
-        ListFooterComponent={
-          <View style={styles.footerBtn}>
-            <TouchableOpacity
-              style={styles.cmFooterBtn}
-              onPress={() => {
-                const gameObj = games.find((g) => g.name === binder?.game);
-                const gameName =
-                  gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
-                const expansionId = binderExpansion?.cm_expansion_id ?? "";
-                const rarityId = selectedRarityObj?.cm_rarity_id ?? "";
-                const name = encodeURIComponent(cardName.trim());
-                Linking.openURL(
-                  `https://www.cardmarket.com/en/${gameName}/Products/Singles?searchMode=v2&idCategory=51&idExpansion=${expansionId}&idRarity=${rarityId}&searchString=${name}`,
-                );
-              }}
-            >
-              <Text style={styles.cmFooterBtnText}>Check on Cardmarket ↗</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cmFooterBtn}
-              onPress={() => {
-                const gameObj = games.find((g) => g.name === binder?.game);
-                const gameName =
-                  gameObj?.name?.replace(/\s+/g, "") || "Pokemon";
-                const expansionId = binderExpansion?.cm_expansion_id ?? "";
-                const name = encodeURIComponent(cardName.trim());
-                Linking.openURL(
-                  `https://www.cardmarket.com/en/${gameName}/Products/Singles?searchMode=v2&idCategory=51&idExpansion=${expansionId}&searchString=${name}`,
-                );
-              }}
-            >
-              <Text style={styles.cmFooterBtnText}>Check without Rarity ↗</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
-              onPress={handleAddCard}
-              disabled={!pickCard}
-            >
-              <Text style={styles.addBtnText}>Insert Card</Text>
-            </TouchableOpacity>
-          </View>
-        }
       />
     </BottomSheet>
   );
 }
 const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 12 },
-  footerBtn: { paddingVertical: 12, gap: 8 },
-  cmFooterBtn: {
-    backgroundColor: Colors.background,
-    borderRadius: 10,
-    padding: 12,
-    alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-  },
-  cmFooterBtnText: { color: Colors.textMuted, fontSize: 13 },
   resultsList: { flex: 1, marginBottom: 12 },
   resultItem: {
     padding: 12,
@@ -384,14 +354,6 @@ const styles = StyleSheet.create({
   resultItemSelected: { borderColor: Colors.primary, borderWidth: 1 },
   resultName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
   resultSet: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
-  addBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: "center",
-  },
-  addBtnDisabled: { backgroundColor: Colors.border },
-  addBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
   resultHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -446,22 +408,22 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   tabs: {
-  flexDirection: "row",
-  paddingHorizontal: 16,
-  paddingTop: 12,
-  gap: 8,
-  marginBottom: 12,
-},
-tabBtn: {
-  flex: 1,
-  padding: 10,
-  borderRadius: 8,
-  alignItems: "center",
-  backgroundColor: Colors.background,
-},
-activeTabBtn: {
-  backgroundColor: Colors.primary,
-},
-tabText: { color: Colors.textMuted, fontWeight: "500" },
-activeTabText: { color: Colors.textWhite },
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 8,
+    marginBottom: 12,
+  },
+  tabBtn: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    backgroundColor: Colors.background,
+  },
+  activeTabBtn: {
+    backgroundColor: Colors.primary,
+  },
+  tabText: { color: Colors.textMuted, fontWeight: "500" },
+  activeTabText: { color: Colors.textWhite },
 });
