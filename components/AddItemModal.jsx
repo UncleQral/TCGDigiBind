@@ -1,6 +1,5 @@
 import BottomSheet, {
   BottomSheetFlatList,
-  BottomSheetTextInput,
   useBottomSheetSpringConfigs,
 } from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
@@ -13,11 +12,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import ImageCropPicker from "react-native-image-crop-picker";
 import { Colors } from "../constants/theme";
 import { api } from "../utils/api";
 import renderBackdrop from "../utils/renderBackdrop";
-import SelectModal from "./SelectModal";
+import CardTabContent from "./tabs/CardTabContent";
+import GradedTabContent from "./tabs/GradedTabContent";
+import SealedTabContent from "./tabs/SealedTabContent";
 
 const springConfigs = {
   damping: 80,
@@ -27,7 +27,7 @@ const springConfigs = {
   stiffness: 500,
 };
 
-export default function AddCardModal({ visible, onClose, binder }) {
+export default function AddItemModal({ visible, onClose, binder }) {
   const animationConfigs = useBottomSheetSpringConfigs(springConfigs);
   const [cardName, setCardName] = useState("");
   const [image, setImage] = useState(null);
@@ -40,6 +40,10 @@ export default function AddCardModal({ visible, onClose, binder }) {
   const [selectedRarityObj, setSelectedRarityObj] = useState(null);
   const [binderExpansion, setBinderExpansion] = useState(null);
   const [imageAspectRatio, setImageAspectRatio] = useState(3 / 4);
+  const [activeTab, setActiveTab] = useState("card");
+  const [gradingCompany, setGradingCompany] = useState(null);
+  const [grade, setGrade] = useState("");
+  const [certNumber, setCertNumber] = useState("");
 
   useEffect(() => {
     if (visible) {
@@ -96,30 +100,6 @@ export default function AddCardModal({ visible, onClose, binder }) {
     Image.getSize(uri, (w, h) => setImageAspectRatio(w > h ? 4 / 3 : 3 / 4));
   };
 
-  const pickImage = async () => {
-    try {
-      const result = await ImageCropPicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: true,
-        freeStyleCropEnabled: true,
-      });
-      applyImage(result.path);
-    } catch (_) {}
-  };
-
-  const takePhoto = async () => {
-    try {
-      const result = await ImageCropPicker.openCamera({
-        width: 300,
-        height: 400,
-        cropping: true,
-        freeStyleCropEnabled: true,
-      });
-      applyImage(result.path);
-    } catch (_) {}
-  };
-
   const searchCard = async (searchText) => {
     try {
       const params = new URLSearchParams();
@@ -164,6 +144,9 @@ export default function AddCardModal({ visible, onClose, binder }) {
     setPickCard("");
     setSelectedRarity(null);
     setSelectedRarityObj(null);
+    setGradingCompany(null);
+    setGrade("");
+    setCertNumber("");
   };
 
   const getCardmarketUrl = (item) => {
@@ -204,82 +187,61 @@ export default function AddCardModal({ visible, onClose, binder }) {
         }
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <View style={styles.topRow}>
-            {/* Photo left */}
-            <View style={styles.imageContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.imagePlaceholder,
-                  { aspectRatio: imageAspectRatio },
-                ]}
-                onPress={pickImage}
-              >
-                {image ? (
-                  <Image source={{ uri: image }} style={styles.cardImage} />
-                ) : (
-                  <Text
-                    style={{
-                      color: "#9CA3AF",
-                      fontSize: 11,
-                      textAlign: "center",
-                    }}
-                  >
-                    Galery
-                  </Text>
-                )}
+          <View>
+            <View style = {styles.tabs}>
+              <TouchableOpacity style ={[styles.tabBtn, activeTab === "card" && styles.activeTabBtn]} onPress={()=>setActiveTab("card")}>
+                <Text style={[styles.tabText, activeTab === "card" && styles.activeTabText]}>Card</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto}>
-                <Text
-                  style={{
-                    color: "#ff7b00",
-                    fontSize: 11,
-                    textAlign: "center",
-                  }}
-                >
-                  Camera
-                </Text>
+
+              <TouchableOpacity style ={[styles.tabBtn, activeTab === "sealed" && styles.activeTabBtn]} onPress={()=>setActiveTab("sealed")}>
+                <Text style={[styles.tabText, activeTab === "sealed" && styles.activeTabText]}>Sealed</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style ={[styles.tabBtn, activeTab === "graded" && styles.activeTabBtn]} onPress={()=>setActiveTab("graded")}>
+                <Text style={[styles.tabText, activeTab === "graded" && styles.activeTabText]}>Graded</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Inputs rechts */}
-            <View style={styles.inputContainer}>
-              <View style={styles.readOnlyField}>
-                <Text style={styles.readOnlyLabel}>Game</Text>
-                <Text style={styles.readOnlyValue}>{binder?.game || "-"}</Text>
-              </View>
-
-              <View style={styles.readOnlyField}>
-                <Text style={styles.readOnlyLabel}>Set</Text>
-                <Text style={styles.readOnlyValue}>
-                  {binder?.binder_set || "-"}
-                </Text>
-              </View>
-
-              <SelectModal
-                label="Select Rarity..."
-                value={selectedRarity}
-                options={rarities.map((r) => ({
-                  label: r.name,
-                  value: r.id,
-                }))}
-                onSelect={(val) => {
-                  setSelectedRarity(val);
-                  const rarityObj = rarities.find((r) => r.id === val);
-                  setSelectedRarityObj(rarityObj);
-                }}
-              />
-
-              <BottomSheetTextInput
-                style={styles.input}
-                placeholder="Cardname..."
-                placeholderTextColor="#9CA3AF"
-                value={cardName}
-                onChangeText={(text) => {
-                  setCardName(text);
-                  searchCard(text);
-                }}
-              />
-            </View>
+            {activeTab === "card" && (
+                <CardTabContent
+                  binder={binder}
+                  rarities={rarities}
+                  selectedRarity={selectedRarity}
+                  setSelectedRarity={setSelectedRarity}
+                  setSelectedRarityObj={setSelectedRarityObj}
+                  cardName={cardName}
+                  setCardName={setCardName}
+                  searchCard={searchCard}
+                  image={image}
+                  onImageChange={applyImage}
+                  imageAspectRatio={imageAspectRatio}
+                />
+              )}
+              {activeTab === "sealed" && (
+                <SealedTabContent
+                  binder={binder}
+                  games={games}
+                  image={image}
+                  onImageChange={applyImage}
+                  imageAspectRatio={imageAspectRatio}
+                />
+              )}
+              {activeTab === "graded" && (
+                <GradedTabContent
+                  cardName={cardName}
+                  setCardName={setCardName}
+                  searchCard={searchCard}
+                  gradingCompany={gradingCompany}
+                  setGradingCompany={setGradingCompany}
+                  grade={grade}
+                  setGrade={setGrade}
+                  certNumber={certNumber}
+                  setCertNumber={setCertNumber}
+                  image={image}
+                  onImageChange={applyImage}
+                  imageAspectRatio={imageAspectRatio}
+                />
+              )}
           </View>
         }
         renderItem={({ item }) => {
@@ -410,46 +372,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   cmFooterBtnText: { color: Colors.textMuted, fontSize: 13 },
-  topRow: { flexDirection: "row", gap: 12, marginBottom: 16, paddingTop: 8 },
-  imageContainer: { width: 90, gap: 8 },
-  imagePlaceholder: {
-    width: 90,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardImage: { width: 90, height: "100%", borderRadius: 12 },
-  cameraBtn: {
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    padding: 6,
-    borderWidth: 0.5,
-    borderColor: Colors.primary,
-    alignItems: "center",
-  },
-  inputContainer: { flex: 1, gap: 8 },
-  readOnlyField: {
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.borderDark,
-  },
-  readOnlyLabel: { color: Colors.textMuted, fontSize: 10, marginBottom: 2 },
-  readOnlyValue: { color: Colors.textWhite, fontSize: 13 },
-  input: {
-    backgroundColor: Colors.background,
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.border,
-    color: Colors.textWhite,
-    fontSize: 13,
-  },
   resultsList: { flex: 1, marginBottom: 12 },
   resultItem: {
     padding: 12,
@@ -523,4 +445,23 @@ const styles = StyleSheet.create({
     color: Colors.textWhite,
     fontWeight: "500",
   },
+  tabs: {
+  flexDirection: "row",
+  paddingHorizontal: 16,
+  paddingTop: 12,
+  gap: 8,
+  marginBottom: 12,
+},
+tabBtn: {
+  flex: 1,
+  padding: 10,
+  borderRadius: 8,
+  alignItems: "center",
+  backgroundColor: Colors.background,
+},
+activeTabBtn: {
+  backgroundColor: Colors.primary,
+},
+tabText: { color: Colors.textMuted, fontWeight: "500" },
+activeTabText: { color: Colors.textWhite },
 });

@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AddCardModal from "../../../components/AddCardModal";
+import AddItemModal from "../../../components/AddItemModal";
 import CardEntity from "../../../components/CardEntity";
 import EditCardModal from "../../../components/EditCardModal";
 import { Colors } from "../../../constants/theme";
@@ -284,7 +284,7 @@ export default function BinderDetailScreen() {
           </TouchableOpacity>
         )}
       </View>
-      <AddCardModal
+      <AddItemModal
         visible={showAddCard}
         onClose={() => {
           setShowAddCard(false);
