@@ -42,11 +42,13 @@ export default function SealedTabContent({
 
   useEffect(() => {
     if (!games?.length) return;
-    const gameId = binder ? games.find(g => g.name === binder.game)?.id : selectedGameId;
-if (!gameId) return;
+    const gameId = binder
+      ? games.find((g) => g.name === binder.game)?.id
+      : selectedGameId;
+    if (!gameId) return;
 
     api
-      .get(`/expansion/${gameId.id}`)
+      .get(`/expansion/${gameId}`)
       .then((data) => {
         if (!Array.isArray(data)) return;
         setExpansions(data);
@@ -60,7 +62,9 @@ if (!gameId) return;
 
   useEffect(() => {
     if (!selectedExpansionId || !games?.length) return;
-    const gameId = binder ? games.find((g) => g.name === binder.game)?.id:selectedGameId;
+    const gameId = binder
+      ? games.find((g) => g.name === binder.game)?.id
+      : selectedGameId;
     if (!gameId) return;
 
     api
@@ -92,25 +96,28 @@ if (!gameId) return;
               <SelectModal
                 label="Select Game..."
                 value={selectedGameId}
-                options={games.map((g)=> ({label: g.name, value: g.id}))}
+                options={games.map((g) => ({ label: g.name, value: g.id }))}
                 onSelect={setSelectedGameId}
               />
               <SelectModal
                 label="Select Expansion..."
                 value={selectedExpansionId}
-                options={expansions.map((e) => ({ label: e.name, value: e.id }))}
+                options={expansions.map((e) => ({
+                  label: e.name,
+                  value: e.id,
+                }))}
                 onSelect={setSelectedExpansionId}
                 disabled={!selectedGameId}
               />
             </>
-          ): !hasBinderSet ? (
+          ) : !hasBinderSet ? (
             <SelectModal
               label="Select Expansion..."
               value={selectedExpansionId}
               options={expansions.map((e) => ({ label: e.name, value: e.id }))}
               onSelect={setSelectedExpansionId}
             />
-          ): null}
+          ) : null}
 
           <BottomSheetTextInput
             style={styles.input}
@@ -128,7 +135,17 @@ if (!gameId) return;
           <BottomSheetTextInput
             style={styles.quantityInput}
             value={String(quantity)}
-            onChangeText={(t) => setQuantity(Number(t.replace(/[^0-9]/g, "")) || 1)}
+            onChangeText={(t) => {
+              const cleaned = t.replace(/[^0-9]/g, "");
+              if (cleaned === "") {
+                setQuantity("");
+              } else {
+                setQuantity(parseInt(cleaned, 10));
+              }
+            }}
+            onBlur={() => {
+              if (!quantity || quantity === "") setQuantity(1);
+            }}
             keyboardType="numeric"
             maxLength={3}
           />
@@ -151,7 +168,10 @@ if (!gameId) return;
 
         <TouchableOpacity
           style={[styles.insertBtn, !pickSealed && styles.insertBtnDisabled]}
-          onPress={() => onInsertSealed?.(pickSealed, quantity)}
+          onPress={() => {
+            console.log("calling function");
+            if (onInsertSealed) onInsertSealed(pickSealed, quantity);
+          }}
           disabled={!pickSealed}
         >
           <Text style={styles.insertBtnText}>Insert Sealed</Text>

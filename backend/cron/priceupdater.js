@@ -97,6 +97,8 @@ const processFiles = async () => {
     const files = fs.readdirSync(path.join(__dirname, "../downloads"));
 
     for (const file of files) {
+      if (!file.startsWith("price_guide")) continue;
+
       const content = fs.readFileSync(
         path.join(__dirname, "../downloads", file),
         "utf8",
@@ -173,10 +175,12 @@ const processFiles = async () => {
       }
 
       fs.unlinkSync(path.join(__dirname, "../downloads", file));
-      console.log(`${file}: ${cardRows.length} card prices, ${sealedRows.length} sealed prices inserted!`);
+      console.log(
+        `${file}: ${cardRows.length} card prices, ${sealedRows.length} sealed prices inserted!`,
+      );
     }
   } catch (err) {
     console.error("Price update error: ", err);
   }
 };
-
+testRun().then(() => processFiles());

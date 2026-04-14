@@ -24,6 +24,9 @@ app.use("/sealed", sealedRouter);
 const bindercardRouter = require("./routes/binder_card.js");
 app.use("/binder_card", bindercardRouter);
 
+const bindersealedRouter = require("./routes/binder_sealed.js");
+app.use("/binder_sealed", bindersealedRouter);
+
 const gamesRouter = require("./routes/game.js");
 app.use("/game", gamesRouter);
 

@@ -139,10 +139,11 @@ export default function AddItemModal({ visible, onClose, binder }) {
     }
   };
 
-  const handleInsertSealed = async(sealedItem, qty)=>{
-    if(!binder?.id || !sealedItem) return;
+  const handleInsertSealed = async (sealedItem, qty) => {
+    console.log("handleInsertSealed called", sealedItem?.id, qty, binder?.id);
+    if (!binder?.id || !sealedItem) return;
 
-    try{
+    try {
       await api.post("/binder_sealed", {
         binder_id: binder.id,
         sealed_id: sealedItem.id,
@@ -150,8 +151,7 @@ export default function AddItemModal({ visible, onClose, binder }) {
       });
       onClose();
       resetModal();
-    }
-    catch(err){
+    } catch (err) {
       console.log("handleSealed error: ", err);
     }
   };
