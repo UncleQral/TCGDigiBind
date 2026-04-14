@@ -21,6 +21,8 @@ const getCMUrl = (gameName, cmExpansionId, searchString) => {
 export default function SealedTabContent({
   binder,
   games,
+  quantity,
+  setQuantity,
   image,
   onImageChange,
   imageAspectRatio,
@@ -121,6 +123,17 @@ if (!gameId) return;
       </View>
 
       <View style={styles.footer}>
+        <View style={styles.quantityRow}>
+          <Text style={styles.quantityLabel}>Quantity</Text>
+          <BottomSheetTextInput
+            style={styles.quantityInput}
+            value={String(quantity)}
+            onChangeText={(t) => setQuantity(Number(t.replace(/[^0-9]/g, "")) || 1)}
+            keyboardType="numeric"
+            maxLength={3}
+          />
+        </View>
+
         <TouchableOpacity
           style={styles.cmFooterBtn}
           onPress={() =>
@@ -138,7 +151,7 @@ if (!gameId) return;
 
         <TouchableOpacity
           style={[styles.insertBtn, !pickSealed && styles.insertBtnDisabled]}
-          onPress={() => onInsertSealed?.(pickSealed)}
+          onPress={() => onInsertSealed?.(pickSealed, quantity)}
           disabled={!pickSealed}
         >
           <Text style={styles.insertBtnText}>Insert Sealed</Text>
@@ -270,6 +283,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   footer: { gap: 8, paddingVertical: 12 },
+  quantityRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  quantityLabel: { color: Colors.textMuted, fontSize: 13, flex: 1 },
+  quantityInput: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+    color: Colors.textWhite,
+    fontSize: 13,
+    width: 64,
+    textAlign: "center",
+  },
   cmFooterBtn: {
     backgroundColor: Colors.background,
     borderRadius: 10,

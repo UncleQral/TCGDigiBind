@@ -18,6 +18,8 @@ export default function GradedTabContent({
   setGrade,
   certNumber,
   setCertNumber,
+  quantity,
+  setQuantity,
   image,
   onImageChange,
   imageAspectRatio,
@@ -132,6 +134,17 @@ export default function GradedTabContent({
             />
           </View>
         </View>
+
+        <View style={styles.quantityRow}>
+          <Text style={styles.quantityLabel}>Quantity</Text>
+          <BottomSheetTextInput
+            style={styles.quantityInput}
+            value={String(quantity)}
+            onChangeText={(t) => setQuantity(Number(t.replace(/[^0-9]/g, "")) || 1)}
+            keyboardType="numeric"
+            maxLength={3}
+          />
+        </View>
       </View>
     </View>
   );
@@ -150,6 +163,19 @@ const styles = StyleSheet.create({
   readOnlyLabel: { color: Colors.textMuted, fontSize: 10, marginBottom: 2 },
   readOnlyValue: { color: Colors.textWhite, fontSize: 13 },
   row: { flexDirection: "row", gap: 8 },
+  quantityRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  quantityLabel: { color: Colors.textMuted, fontSize: 13, flex: 1 },
+  quantityInput: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 0.5,
+    borderColor: Colors.border,
+    color: Colors.textWhite,
+    fontSize: 13,
+    width: 64,
+    textAlign: "center",
+  },
   halfField: { flex: 1, gap: 4 },
   label: { color: Colors.textMuted, fontSize: 10, paddingLeft: 2 },
   input: {

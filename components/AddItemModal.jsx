@@ -43,6 +43,7 @@ export default function AddItemModal({ visible, onClose, binder }) {
   const [gradingCompany, setGradingCompany] = useState(null);
   const [grade, setGrade] = useState("");
   const [certNumber, setCertNumber] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (visible) {
@@ -121,6 +122,7 @@ export default function AddItemModal({ visible, onClose, binder }) {
   };
 
   const handleAddCard = async () => {
+    if (!binder?.id || !pickCard) return;
     try {
       await api.post("/binder_card", {
         binder_id: binder.id,
@@ -136,6 +138,24 @@ export default function AddItemModal({ visible, onClose, binder }) {
       console.log("handleAddCard error:", err);
     }
   };
+
+  const handleInsertSealed = async(sealedItem, qty)=>{
+    if(!binder?.id || !sealedItem) return;
+
+    try{
+      await api.post("/binder_sealed", {
+        binder_id: binder.id,
+        sealed_id: sealedItem.id,
+        quantity: qty || quantity,
+      });
+      onClose();
+      resetModal();
+    }
+    catch(err){
+      console.log("handleSealed error: ", err);
+    }
+  };
+
   const resetModal = () => {
     setCardName("");
     setImage(null);
@@ -146,6 +166,7 @@ export default function AddItemModal({ visible, onClose, binder }) {
     setGradingCompany(null);
     setGrade("");
     setCertNumber("");
+    setQuantity(1);
   };
 
   return (
@@ -241,6 +262,8 @@ export default function AddItemModal({ visible, onClose, binder }) {
                 pickCard={pickCard}
                 binderExpansion={binderExpansion}
                 games={games}
+                quantity={quantity}
+                setQuantity={setQuantity}
                 image={image}
                 onImageChange={applyImage}
                 imageAspectRatio={imageAspectRatio}
@@ -250,9 +273,12 @@ export default function AddItemModal({ visible, onClose, binder }) {
               <SealedTabContent
                 binder={binder}
                 games={games}
+                quantity={quantity}
+                setQuantity={setQuantity}
                 image={image}
                 onImageChange={applyImage}
                 imageAspectRatio={imageAspectRatio}
+                onInsertSealed={handleInsertSealed}
               />
             )}
             {activeTab === "graded" && (
@@ -268,6 +294,8 @@ export default function AddItemModal({ visible, onClose, binder }) {
                 setGrade={setGrade}
                 certNumber={certNumber}
                 setCertNumber={setCertNumber}
+                quantity={quantity}
+                setQuantity={setQuantity}
                 image={image}
                 onImageChange={applyImage}
                 imageAspectRatio={imageAspectRatio}
