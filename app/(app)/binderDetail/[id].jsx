@@ -24,6 +24,8 @@ export default function BinderDetailScreen() {
 
   const [binder, setBinder] = useState(null);
   const [cards, setCards] = useState([]);
+  const [sealedItems, setSealedItems] = useState([]);
+  const [gradedItems, setGradedItems] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cards");
@@ -56,8 +58,26 @@ export default function BinderDetailScreen() {
     }
   };
 
+  const getSealed = async () => {
+    try {
+      const data = await api.get(`/binder_sealed?binder_id=${id}`);
+      if (Array.isArray(data)) setSealedItems(data);
+    } catch (err) {
+      console.log("getSealed error:", err);
+    }
+  };
+
+  const getGraded = async () => {
+    try {
+      const data = await api.get(`/graded_card?binder_id=${id}`);
+      if (Array.isArray(data)) setGradedItems(data);
+    } catch (err) {
+      console.log("getGraded error:", err);
+    }
+  };
+
   const fetchAll = useCallback(async () => {
-    await Promise.all([getBinder(), getCards()]);
+    await Promise.all([getBinder(), getCards(), getSealed(), getGraded()]);
   }, [id]);
 
   const { refreshing, onRefresh } = useRefresh(fetchAll);
@@ -102,6 +122,8 @@ export default function BinderDetailScreen() {
   useEffect(() => {
     getBinder();
     getCards();
+    getSealed();
+    getGraded();
   }, []);
 
   const { tagColors } = useSetting();
@@ -191,13 +213,26 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "cards" && styles.activeTab]}
           onPress={() => setActiveTab("cards")}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "cards" && styles.activeTabText,
-            ]}
-          >
+          <Text style={[styles.tabText, activeTab === "cards" && styles.activeTabText]}>
             Cards
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "sealed" && styles.activeTab]}
+          onPress={() => setActiveTab("sealed")}
+        >
+          <Text style={[styles.tabText, activeTab === "sealed" && styles.activeTabText]}>
+            Sealed
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "graded" && styles.activeTab]}
+          onPress={() => setActiveTab("graded")}
+        >
+          <Text style={[styles.tabText, activeTab === "graded" && styles.activeTabText]}>
+            Graded
           </Text>
         </TouchableOpacity>
 
@@ -205,19 +240,14 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "stats" && styles.activeTab]}
           onPress={() => setActiveTab("stats")}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "stats" && styles.activeTabText,
-            ]}
-          >
+          <Text style={[styles.tabText, activeTab === "stats" && styles.activeTabText]}>
             Price Stats
           </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        {activeTab === "cards" ? (
+        {activeTab === "cards" && (
           <FlatList
             data={cards}
             numColumns={4}
@@ -239,18 +269,77 @@ export default function BinderDetailScreen() {
               />
             )}
             ListEmptyComponent={
-              <Text
-                style={{
-                  color: "#9CA3AF",
-                  textAlign: "center",
-                  marginTop: 20,
-                }}
-              >
-                Binder is empty.
-              </Text>
+              <Text style={styles.emptyText}>Binder is empty.</Text>
             }
           />
-        ) : (
+        )}
+
+        {activeTab === "sealed" && (
+          <FlatList
+            data={sealedItems}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#8340BF"]}
+                progressBackgroundColor="#2A2A2A"
+              />
+            }
+            renderItem={({ item }) => (
+              <View style={styles.listItem}>
+                <View style={styles.listItemLeft}>
+                  <Text style={styles.listItemName}>{item.name}</Text>
+                  <Text style={styles.listItemSub}>
+                    {item.category_name}
+                    {item.quantity > 1 ? `  ×${item.quantity}` : ""}
+                  </Text>
+                </View>
+                <View style={styles.listItemRight}>
+                  <Text style={styles.listItemPrice}>€ {item.trend_price ?? "-"}</Text>
+                  <Text style={styles.listItemPriceSub}>avg € {item.avg_sell ?? "-"}</Text>
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No sealed products.</Text>
+            }
+          />
+        )}
+
+        {activeTab === "graded" && (
+          <FlatList
+            data={gradedItems}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#8340BF"]}
+                progressBackgroundColor="#2A2A2A"
+              />
+            }
+            renderItem={({ item }) => (
+              <View style={styles.listItem}>
+                <View style={styles.listItemLeft}>
+                  <Text style={styles.listItemName}>{item.card_name}</Text>
+                  <Text style={styles.listItemSub}>{item.grading_company_name}</Text>
+                </View>
+                <View style={styles.listItemRight}>
+                  <Text style={styles.listItemPrice}>{item.grade}</Text>
+                  {item.cert_number ? (
+                    <Text style={styles.listItemPriceSub}>#{item.cert_number}</Text>
+                  ) : null}
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No graded cards.</Text>
+            }
+          />
+        )}
+
+        {activeTab === "stats" && (
           <Text style={{ color: "#fff" }}>Price Stats coming soon...</Text>
         )}
       </View>
@@ -289,6 +378,8 @@ export default function BinderDetailScreen() {
         onClose={() => {
           setShowAddCard(false);
           getCards();
+          getSealed();
+          getGraded();
         }}
         binder={binder}
       />
@@ -388,6 +479,24 @@ const styles = StyleSheet.create({
   tabText: { color: Colors.textMuted, fontWeight: "500" },
   activeTabText: { color: Colors.textWhite },
   content: { flex: 1, paddingHorizontal: 16 },
+  emptyText: { color: "#9CA3AF", textAlign: "center", marginTop: 20 },
+  listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: Colors.surface,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: Colors.borderDark,
+  },
+  listItemLeft: { flex: 1 },
+  listItemName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
+  listItemSub: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
+  listItemRight: { alignItems: "flex-end" },
+  listItemPrice: { color: Colors.primaryLight, fontSize: 14, fontWeight: "500" },
+  listItemPriceSub: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
   bottomBar: {
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
