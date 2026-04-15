@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
+  Image,
   RefreshControl,
   StyleSheet,
   Text,
@@ -32,6 +33,7 @@ export default function Homescreen() {
   const [showCreateMenuModal, setCreateMenuModal] = useState(false);
   const [showBinderModal, setShowBinderModal] = useState(false);
   const [showAddItemModal, setAddItemModal] = useState(false);
+  const [singleItems, setSingleItems] = useState([]);
 
   const router = useRouter();
 
@@ -52,7 +54,29 @@ export default function Homescreen() {
     }
   }, []);
 
-  const { refreshing, onRefresh } = useRefresh(getBinders);
+  const getSingleItems = useCallback(async () => {
+    try {
+      const [cards, sealed, graded] = await Promise.all([
+        api.get("/binder_card?singles=true"),
+        api.get("/binder_sealed?singles=true"),
+        api.get("/graded_card?singles=true"),
+      ]);
+      const combined = [
+        ...(Array.isArray(cards) ? cards.map((c) => ({ ...c, _type: "card" })) : []),
+        ...(Array.isArray(sealed) ? sealed.map((s) => ({ ...s, _type: "sealed" })) : []),
+        ...(Array.isArray(graded) ? graded.map((g) => ({ ...g, _type: "graded" })) : []),
+      ];
+      setSingleItems(combined);
+    } catch (err) {
+      console.log("getSingleItems error:", err);
+    }
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    await Promise.all([getBinders(), getSingleItems()]);
+  }, [getBinders, getSingleItems]);
+
+  const { refreshing, onRefresh } = useRefresh(fetchAll);
 
   const handleLongPress = (id) => {
     setSelectionMode(true);
@@ -82,6 +106,7 @@ export default function Homescreen() {
 
   useEffect(() => {
     getBinders();
+    getSingleItems();
   }, []);
 
   useEffect(() => {
@@ -158,6 +183,53 @@ export default function Homescreen() {
             isSelected={selectedBinders.includes(item.id)}
           />
         )}
+        ListFooterComponent={
+          singleItems.length > 0 ? (
+            <View style={styles.singlesSection}>
+              <Text style={styles.sectionLabel}>Singles</Text>
+              {singleItems.map((item) => {
+                const name =
+                  item._type === "graded" ? item.card_name : item.name;
+                const tag =
+                  item._type === "card"
+                    ? item.expansion_name ?? ""
+                    : item._type === "sealed"
+                    ? item.category_name ?? ""
+                    : item.grading_company_name ?? "";
+                const price =
+                  item._type === "graded"
+                    ? item.grade
+                    : `€ ${item.trend_price ?? "-"}`;
+
+                return (
+                  <View
+                    key={`${item._type}-${item.id}`}
+                    style={styles.singleItem}
+                  >
+                    {item.image_url ? (
+                      <Image
+                        source={{ uri: item.image_url }}
+                        style={styles.singleItemImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={styles.singleItemImagePlaceholder} />
+                    )}
+                    <View style={styles.singleItemInfo}>
+                      <Text style={styles.singleItemName} numberOfLines={1}>
+                        {name}
+                      </Text>
+                      {tag ? (
+                        <Text style={styles.singleItemTag}>{tag}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.singleItemPrice}>{price}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null
+        }
       />
 
       <View style={styles.bottomBar}>
@@ -257,7 +329,10 @@ export default function Homescreen() {
       />
       <AddItemModal
         visible={showAddItemModal}
-        onClose={() => setAddItemModal(false)}
+        onClose={() => {
+          setAddItemModal(false);
+          getSingleItems();
+        }}
       />
     </View>
   );
@@ -301,6 +376,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   binderList: { flex: 1, paddingHorizontal: 20 },
+  singlesSection: { marginTop: 20 },
+  sectionLabel: {
+    color: Colors.textMuted,
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  singleItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: Colors.borderDark,
+    gap: 10,
+  },
+  singleItemImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+  },
+  singleItemImagePlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    backgroundColor: Colors.borderDark,
+  },
+  singleItemInfo: { flex: 1 },
+  singleItemName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
+  singleItemTag: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
+  singleItemPrice: { color: Colors.primaryLight, fontSize: 13, fontWeight: "500" },
   bottomBar: {
     backgroundColor: Colors.surface,
     borderTopWidth: 1,

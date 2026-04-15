@@ -7,8 +7,22 @@ const router = express.Router();
 
 router.get("/", auth, async (req, res) => {
   try {
-    const binder_id = req.query.binder_id;
+    const { binder_id, singles } = req.query;
     const user_id = req.user.id;
+
+    if (singles === "true") {
+      const results = await query(
+        `SELECT bc.*,
+                c.name, c.cardmarket_id, c.expansion_id,
+                cp.avg_sell, cp.trend_price, cp.avg1, cp.avg7, cp.avg30, cp.foil_sell
+         FROM binder_card bc
+         JOIN card c ON bc.card_id = c.card_id
+         LEFT JOIN card_price cp ON cp.card_id = c.card_id
+         WHERE bc.binder_id IS NULL AND bc.user_id = ?`,
+        [user_id],
+      );
+      return res.json(results);
+    }
 
     const results = await query(
       `SELECT bc.*,
@@ -51,15 +65,16 @@ router.post("/", auth, async (req, res) => {
     }
     
     const results = await query(
-      "INSERT INTO binder_card (binder_id, card_id, quantity, condition_of_card, status, foil, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO binder_card (binder_id, card_id, quantity, condition_of_card, status, foil, image_url, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        binder_id,
+        binder_id || null,
         card_id,
         quantity,
         condition_of_card,
         status,
         foil,
         image_url,
+        user_id,
       ],
     );
 

@@ -7,9 +7,20 @@ router.post("/", auth, async (req, res) => {
   try {
     const { card_id, binder_id, grading_company_id, grade, cert_number } =
       req.body;
+    const user_id = req.user.id;
+
+    if (binder_id !== null && binder_id !== undefined) {
+      const binder = await query(
+        "SELECT id FROM binder WHERE id = ? AND user_id = ?",
+        [binder_id, user_id],
+      );
+      if (binder.length === 0)
+        return res.status(403).json({ message: "Forbidden" });
+    }
+
     const results = await query(
-      "INSERT INTO graded_card (card_id, binder_id, grading_company_id, grade, cert_number) VALUES (?, ?, ?, ?, ?)",
-      [card_id, binder_id, grading_company_id, grade, cert_number],
+      "INSERT INTO graded_card (card_id, binder_id, grading_company_id, grade, cert_number, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [card_id, binder_id || null, grading_company_id, grade, cert_number, user_id],
     );
     res.json(results);
   } catch (err) {
@@ -19,8 +30,20 @@ router.post("/", auth, async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
   try {
-    const binder_id = req.query.binder_id;
+    const { binder_id, singles } = req.query;
     const user_id = req.user.id;
+
+    if (singles === "true") {
+      const results = await query(
+        `SELECT gc.*, c.name AS card_name, gco.name AS grading_company_name
+         FROM graded_card gc
+         JOIN card c ON gc.card_id = c.card_id
+         JOIN grading_company gco ON gc.grading_company_id = gco.id
+         WHERE gc.binder_id IS NULL AND gc.user_id = ?`,
+        [user_id],
+      );
+      return res.json(results);
+    }
 
     const results = await query(
       `SELECT gc.*, c.name AS card_name, gco.name AS grading_company_name
