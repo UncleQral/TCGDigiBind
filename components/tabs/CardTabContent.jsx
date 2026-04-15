@@ -148,12 +148,15 @@ export default function CardTabContent({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.addBtn, !pickCard && styles.addBtnDisabled]}
+          style={[styles.addBtn, (!pickCard || !binder) && styles.addBtnDisabled]}
           onPress={handleAddCard}
-          disabled={!pickCard}
+          disabled={!pickCard || !binder}
         >
           <Text style={styles.addBtnText}>Insert Card</Text>
         </TouchableOpacity>
+        {!binder && (
+          <Text style={styles.noBinder}>Select a binder before inserting</Text>
+        )}
       </View>
     </>
   );
@@ -211,4 +214,5 @@ const styles = StyleSheet.create({
   },
   addBtnDisabled: { backgroundColor: Colors.border },
   addBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
+  noBinder: { color: Colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 2 },
 });

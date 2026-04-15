@@ -167,15 +167,17 @@ export default function SealedTabContent({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.insertBtn, !pickSealed && styles.insertBtnDisabled]}
+          style={[styles.insertBtn, (!pickSealed || !binder) && styles.insertBtnDisabled]}
           onPress={() => {
-            console.log("calling function");
             if (onInsertSealed) onInsertSealed(pickSealed, quantity);
           }}
-          disabled={!pickSealed}
+          disabled={!pickSealed || !binder}
         >
           <Text style={styles.insertBtnText}>Insert Sealed</Text>
         </TouchableOpacity>
+        {!binder && (
+          <Text style={styles.noBinder}>Select a binder before inserting</Text>
+        )}
       </View>
 
       <FlatList
@@ -333,4 +335,5 @@ const styles = StyleSheet.create({
   },
   insertBtnDisabled: { backgroundColor: Colors.border },
   insertBtnText: { color: Colors.textWhite, fontWeight: "500", fontSize: 15 },
+  noBinder: { color: Colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 2 },
 });

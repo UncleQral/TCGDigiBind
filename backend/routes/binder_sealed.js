@@ -11,7 +11,7 @@ router.get("/", auth, async (req, res) => {
     const user_id = req.user.id;
 
     const results = await query(
-      `SELECT bs.id, bs.quantity,
+      `SELECT bs.id, bs.quantity, bs.image_url,
               sp.name, sp.category_name,
               COALESCE(spr.trend_price, 0) AS trend_price,
               COALESCE(spr.avg_sell, 0) AS avg_sell
@@ -29,21 +29,19 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-router.post("/", auth, async (req,res) => {
-    try{
-        const binder_id=req.body.binder_id;
-        const sealed_id = req.body.sealed_id;
-        const quantity = req.body.quantity;
+router.post("/", auth, async (req, res) => {
+  try {
+    const { binder_id, sealed_id, quantity, image_url } = req.body;
 
-        const results = await query(
-            'INSERT INTO binder_sealed (binder_id, sealed_id, quantity) VALUES (?,?,?)', [binder_id,sealed_id,quantity]
-        );
-        
-        res.json(results);
-    }
-    catch(err){
-        handleError(res,err);
-    }
+    const results = await query(
+      "INSERT INTO binder_sealed (binder_id, sealed_id, quantity, image_url) VALUES (?, ?, ?, ?)",
+      [binder_id, sealed_id, quantity, image_url || null],
+    );
+
+    res.json(results);
+  } catch (err) {
+    handleError(res, err);
+  }
 });
 
 module.exports = router;

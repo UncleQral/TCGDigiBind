@@ -148,6 +148,7 @@ export default function AddItemModal({ visible, onClose, binder }) {
         binder_id: binder.id,
         sealed_id: sealedItem.id,
         quantity: qty || quantity,
+        image_url: image,
       });
       onClose();
       resetModal();

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   RefreshControl,
   StyleSheet,
   Text,
@@ -288,6 +289,13 @@ export default function BinderDetailScreen() {
             }
             renderItem={({ item }) => (
               <View style={styles.listItem}>
+                {item.image_url ? (
+                  <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.listItemImage}
+                    resizeMode="cover"
+                  />
+                ) : null}
                 <View style={styles.listItemLeft}>
                   <Text style={styles.listItemName}>{item.name}</Text>
                   <Text style={styles.listItemSub}>
@@ -491,6 +499,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: Colors.borderDark,
   },
+  listItemImage: { width: 44, height: 44, borderRadius: 6, marginRight: 10 },
   listItemLeft: { flex: 1 },
   listItemName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
   listItemSub: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
