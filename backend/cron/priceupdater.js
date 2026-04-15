@@ -183,4 +183,4 @@ const processFiles = async () => {
     console.error("Price update error: ", err);
   }
 };
-testRun().then(() => processFiles());
+//testRun().then(() => processFiles());
