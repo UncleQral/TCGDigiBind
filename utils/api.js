@@ -19,6 +19,7 @@ export const api = {
   },
 
   post: async (path, body) => {
+    console.log("authToken: ", authToken);
     const res = await fetch(`${BASE_URL}${path}`, {
       method: "POST",
       headers: {

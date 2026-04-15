@@ -122,16 +122,23 @@ export default function AddItemModal({ visible, onClose, binder }) {
   };
 
   const handleAddCard = async () => {
-    if (!binder?.id || !pickCard) return;
+    console.log(
+      "handleAddCard called, binder:",
+      binder,
+      "pickCard: ",
+      pickCard,
+    );
+    if (!pickCard) return;
     try {
-      await api.post("/binder_card", {
-        binder_id: binder.id,
+      const result = await api.post("/binder_card", {
+        binder_id: binder?.id || null,
         card_id: pickCard,
         quantity: 1,
         foil: false,
         status: "owned",
         image_url: image,
       });
+      console.log("API result: ", JSON.stringify(result));
       onClose();
       resetModal();
     } catch (err) {
@@ -140,12 +147,11 @@ export default function AddItemModal({ visible, onClose, binder }) {
   };
 
   const handleInsertSealed = async (sealedItem, qty) => {
-    console.log("handleInsertSealed called", sealedItem?.id, qty, binder?.id);
-    if (!binder?.id || !sealedItem) return;
+    if (!sealedItem) return;
 
     try {
       await api.post("/binder_sealed", {
-        binder_id: binder.id,
+        binder_id: binder?.id || null,
         sealed_id: sealedItem.id,
         quantity: qty || quantity,
         image_url: image,

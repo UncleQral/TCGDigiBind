@@ -41,13 +41,15 @@ router.post("/", auth, async (req, res) => {
     } = req.body;
     const user_id = req.user.id;
 
-    const binder = await query(
-      "SELECT id FROM binder WHERE id = ? AND user_id = ?",
-      [binder_id, user_id],
-    );
-    if (binder.length === 0)
-      return res.status(403).json({ message: "Forbidden" });
-
+    if(binder_id !== null){
+      const binder = await query(
+            "SELECT id FROM binder WHERE id = ? AND user_id = ?",
+            [binder_id, user_id],
+          );
+        if (binder.length === 0)
+         return res.status(403).json({ message: "Forbidden" });
+    }
+    
     const results = await query(
       "INSERT INTO binder_card (binder_id, card_id, quantity, condition_of_card, status, foil, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
