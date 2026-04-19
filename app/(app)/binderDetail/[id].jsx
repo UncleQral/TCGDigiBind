@@ -6,6 +6,7 @@ import {
   FlatList,
   Image,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -27,6 +28,7 @@ export default function BinderDetailScreen() {
   const [cards, setCards] = useState([]);
   const [sealedItems, setSealedItems] = useState([]);
   const [gradedItems, setGradedItems] = useState([]);
+  const [stats, setStats] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cards");
@@ -77,8 +79,24 @@ export default function BinderDetailScreen() {
     }
   };
 
+  const getStats = async () => {
+    try {
+      const data = await api.get(`/binder/${id}/stats`);
+      console.log("stats data: ", JSON.stringify(data));
+      if (data && typeof data === "object") setStats(data);
+    } catch (err) {
+      console.log("getStats error:", err);
+    }
+  };
+
   const fetchAll = useCallback(async () => {
-    await Promise.all([getBinder(), getCards(), getSealed(), getGraded()]);
+    await Promise.all([
+      getBinder(),
+      getCards(),
+      getSealed(),
+      getGraded(),
+      getStats(),
+    ]);
   }, [id]);
 
   const { refreshing, onRefresh } = useRefresh(fetchAll);
@@ -125,6 +143,7 @@ export default function BinderDetailScreen() {
     getCards();
     getSealed();
     getGraded();
+    getStats();
   }, []);
 
   const { tagColors } = useSetting();
@@ -214,7 +233,12 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "cards" && styles.activeTab]}
           onPress={() => setActiveTab("cards")}
         >
-          <Text style={[styles.tabText, activeTab === "cards" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "cards" && styles.activeTabText,
+            ]}
+          >
             Cards
           </Text>
         </TouchableOpacity>
@@ -223,7 +247,12 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "sealed" && styles.activeTab]}
           onPress={() => setActiveTab("sealed")}
         >
-          <Text style={[styles.tabText, activeTab === "sealed" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "sealed" && styles.activeTabText,
+            ]}
+          >
             Sealed
           </Text>
         </TouchableOpacity>
@@ -232,7 +261,12 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "graded" && styles.activeTab]}
           onPress={() => setActiveTab("graded")}
         >
-          <Text style={[styles.tabText, activeTab === "graded" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "graded" && styles.activeTabText,
+            ]}
+          >
             Graded
           </Text>
         </TouchableOpacity>
@@ -241,7 +275,12 @@ export default function BinderDetailScreen() {
           style={[styles.tab, activeTab === "stats" && styles.activeTab]}
           onPress={() => setActiveTab("stats")}
         >
-          <Text style={[styles.tabText, activeTab === "stats" && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "stats" && styles.activeTabText,
+            ]}
+          >
             Price Stats
           </Text>
         </TouchableOpacity>
@@ -304,8 +343,12 @@ export default function BinderDetailScreen() {
                   </Text>
                 </View>
                 <View style={styles.listItemRight}>
-                  <Text style={styles.listItemPrice}>€ {item.trend_price ?? "-"}</Text>
-                  <Text style={styles.listItemPriceSub}>avg € {item.avg_sell ?? "-"}</Text>
+                  <Text style={styles.listItemPrice}>
+                    € {item.trend_price ?? "-"}
+                  </Text>
+                  <Text style={styles.listItemPriceSub}>
+                    avg € {item.avg_sell ?? "-"}
+                  </Text>
                 </View>
               </View>
             )}
@@ -331,12 +374,16 @@ export default function BinderDetailScreen() {
               <View style={styles.listItem}>
                 <View style={styles.listItemLeft}>
                   <Text style={styles.listItemName}>{item.card_name}</Text>
-                  <Text style={styles.listItemSub}>{item.grading_company_name}</Text>
+                  <Text style={styles.listItemSub}>
+                    {item.grading_company_name}
+                  </Text>
                 </View>
                 <View style={styles.listItemRight}>
                   <Text style={styles.listItemPrice}>{item.grade}</Text>
                   {item.cert_number ? (
-                    <Text style={styles.listItemPriceSub}>#{item.cert_number}</Text>
+                    <Text style={styles.listItemPriceSub}>
+                      #{item.cert_number}
+                    </Text>
                   ) : null}
                 </View>
               </View>
@@ -348,7 +395,176 @@ export default function BinderDetailScreen() {
         )}
 
         {activeTab === "stats" && (
-          <Text style={{ color: "#fff" }}>Price Stats coming soon...</Text>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.statsScroll}
+          >
+            {!stats ? (
+              <Text style={styles.emptyText}>No data available</Text>
+            ) : (
+              <>
+                {/* Item counts */}
+                <View style={styles.statsRow}>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statBoxValue}>
+                      {stats.cardCount ?? 0}
+                    </Text>
+                    <Text style={styles.statBoxLabel}>Cards</Text>
+                  </View>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statBoxValue}>
+                      {stats.sealedCount ?? 0}
+                    </Text>
+                    <Text style={styles.statBoxLabel}>Sealed</Text>
+                  </View>
+                  <View style={styles.statBox}>
+                    <Text style={styles.statBoxValue}>
+                      {stats.gradedCount ?? 0}
+                    </Text>
+                    <Text style={styles.statBoxLabel}>Graded</Text>
+                  </View>
+                </View>
+
+                {/* Price overview */}
+                <View style={styles.statsRow}>
+                  <View style={[styles.statBox, { flex: 1 }]}>
+                    <Text style={styles.statBoxValue}>
+                      {stats.avgPrice != null ? `€ ${stats.avgPrice}` : "—"}
+                    </Text>
+                    <Text style={styles.statBoxLabel}>Avg Card Price</Text>
+                  </View>
+                  <View style={[styles.statBox, { flex: 1 }]}>
+                    <Text
+                      style={[
+                        styles.statBoxValue,
+                        stats.totalTrend != null && stats.totalAvg != null
+                          ? stats.totalTrend >= stats.totalAvg
+                            ? styles.statPositive
+                            : styles.statNegative
+                          : null,
+                      ]}
+                    >
+                      {stats.totalTrend != null && stats.totalAvg != null
+                        ? `${stats.totalTrend >= stats.totalAvg ? "+" : ""}€ ${(stats.totalTrend - stats.totalAvg).toFixed(2)}`
+                        : "—"}
+                    </Text>
+                    <Text style={styles.statBoxLabel}>Trend vs Avg</Text>
+                  </View>
+                </View>
+
+                {/* Most expensive + Cheapest */}
+                <Text style={styles.statsSectionLabel}>Highlights</Text>
+                <View style={styles.statsRow}>
+                  <View style={[styles.statCard, { flex: 1 }]}>
+                    <Text style={styles.statCardHeader}>Most Expensive</Text>
+                    {stats.mostExpensive ? (
+                      <>
+                        {stats.mostExpensive.image_url ? (
+                          <Image
+                            source={{ uri: stats.mostExpensive.image_url }}
+                            style={styles.statCardImage}
+                            resizeMode="cover"
+                          />
+                        ) : null}
+                        <Text style={styles.statCardName} numberOfLines={2}>
+                          {stats.mostExpensive.name}
+                        </Text>
+                        <Text style={styles.statCardPrice}>
+                          € {stats.mostExpensive.price}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={styles.statCardEmpty}>No data</Text>
+                    )}
+                  </View>
+                  <View style={[styles.statCard, { flex: 1 }]}>
+                    <Text style={styles.statCardHeader}>Cheapest</Text>
+                    {stats.cheapest ? (
+                      <>
+                        {stats.cheapest.image_url ? (
+                          <Image
+                            source={{ uri: stats.cheapest.image_url }}
+                            style={styles.statCardImage}
+                            resizeMode="cover"
+                          />
+                        ) : null}
+                        <Text style={styles.statCardName} numberOfLines={2}>
+                          {stats.cheapest.name}
+                        </Text>
+                        <Text style={styles.statCardPrice}>
+                          € {stats.cheapest.price}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={styles.statCardEmpty}>No data</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Foil ratio */}
+                <Text style={styles.statsSectionLabel}>Foil Ratio</Text>
+                <View style={styles.statCard}>
+                  {stats.totalCards > 0 ? (
+                    <>
+                      <View style={styles.foilBarBg}>
+                        <View
+                          style={[
+                            styles.foilBarFill,
+                            {
+                              width: `${Math.round((stats.foilCount / stats.totalCards) * 100)}%`,
+                            },
+                          ]}
+                        />
+                      </View>
+                      <Text style={styles.foilLabel}>
+                        {stats.foilCount} / {stats.totalCards} foil
+                        {"  "}
+                        <Text style={styles.statBoxValue}>
+                          {Math.round(
+                            (stats.foilCount / stats.totalCards) * 100,
+                          )}
+                          %
+                        </Text>
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={styles.statCardEmpty}>No data</Text>
+                  )}
+                </View>
+
+                {/* Condition distribution */}
+                <Text style={styles.statsSectionLabel}>Condition</Text>
+                <View style={styles.statCard}>
+                  {stats.conditionDistribution?.length > 0 ? (
+                    stats.conditionDistribution.map((row) => {
+                      const pct =
+                        stats.totalCards > 0
+                          ? Math.round((row.count / stats.totalCards) * 100)
+                          : 0;
+                      return (
+                        <View key={row.condition} style={styles.conditionRow}>
+                          <Text style={styles.conditionLabel}>
+                            {row.condition || "Unknown"}
+                          </Text>
+                          <View style={styles.conditionBarBg}>
+                            <View
+                              style={[
+                                styles.conditionBarFill,
+                                { width: `${pct}%` },
+                              ]}
+                            />
+                          </View>
+                          <Text style={styles.conditionCount}>{row.count}</Text>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <Text style={styles.statCardEmpty}>No data</Text>
+                  )}
+                </View>
+              </>
+            )}
+          </ScrollView>
         )}
       </View>
 
@@ -504,8 +720,105 @@ const styles = StyleSheet.create({
   listItemName: { color: Colors.textWhite, fontSize: 13, fontWeight: "500" },
   listItemSub: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
   listItemRight: { alignItems: "flex-end" },
-  listItemPrice: { color: Colors.primaryLight, fontSize: 14, fontWeight: "500" },
+  listItemPrice: {
+    color: Colors.primaryLight,
+    fontSize: 14,
+    fontWeight: "500",
+  },
   listItemPriceSub: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
+  // Stats tab
+  statsScroll: { paddingBottom: 24, paddingTop: 4 },
+  statsRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  statsSectionLabel: {
+    color: Colors.textMuted,
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 6,
+    marginTop: 8,
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 0.5,
+    borderColor: Colors.borderDark,
+  },
+  statBoxValue: { color: Colors.textWhite, fontSize: 18, fontWeight: "600" },
+  statBoxLabel: { color: Colors.textMuted, fontSize: 11, marginTop: 4 },
+  statPositive: { color: "#4ade80" },
+  statNegative: { color: Colors.error },
+  statCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 0.5,
+    borderColor: Colors.borderDark,
+    marginBottom: 8,
+  },
+  statCardHeader: {
+    color: Colors.textMuted,
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 8,
+  },
+  statCardImage: {
+    width: "100%",
+    height: 80,
+    borderRadius: 6,
+    marginBottom: 6,
+  },
+  statCardName: { color: Colors.textWhite, fontSize: 12, fontWeight: "500" },
+  statCardPrice: {
+    color: Colors.primaryLight,
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  statCardEmpty: { color: Colors.textMuted, fontSize: 12 },
+  foilBarBg: {
+    height: 8,
+    backgroundColor: Colors.borderDark,
+    borderRadius: 4,
+    marginBottom: 6,
+    overflow: "hidden",
+  },
+  foilBarFill: {
+    height: "100%",
+    backgroundColor: Colors.primary,
+    borderRadius: 4,
+  },
+  foilLabel: { color: Colors.textMuted, fontSize: 12 },
+  conditionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  conditionLabel: { color: Colors.textMuted, fontSize: 11, width: 60 },
+  conditionBarBg: {
+    flex: 1,
+    height: 6,
+    backgroundColor: Colors.borderDark,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  conditionBarFill: {
+    height: "100%",
+    backgroundColor: Colors.primaryLight,
+    borderRadius: 3,
+  },
+  conditionCount: {
+    color: Colors.textWhite,
+    fontSize: 11,
+    width: 24,
+    textAlign: "right",
+  },
   bottomBar: {
     backgroundColor: Colors.surface,
     borderTopWidth: 1,

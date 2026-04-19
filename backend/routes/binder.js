@@ -55,9 +55,16 @@ router.get("/:id", auth, async (req, res) => {
 
 router.get("/:id/stats", auth, async (req, res) => {
   try {
-    const response = await fetch(
-      `http://tcgdigibind.railway.internal:8080/stats/binder/${req.params.id}`,
+    const binder_id = req.params.id;
+    const user_id = req.user.id;
+
+    const [binderCheck] = await query(
+      "SELECT id FROM binder WHERE id = ? AND user_id = ?",
+      [binder_id, user_id],
     );
+    if (!binderCheck) return res.status(404).json({ message: "Not found" });
+
+    const response = await fetch(`http://tcgdigibind.railway.internal:8080/stats/binder/${binder_id}`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
