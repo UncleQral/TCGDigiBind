@@ -60,14 +60,14 @@ public class StatsService {
     }
 
     private Map<String, Object> getMostExpensive(int binderId) {
-        String cardSql = "SELECT c.name, cp.trend_price, bc.image_url " +
+        String cardSql = "SELECT c.name, cp.trend_price AS price, bc.image_url " +
                     "FROM binder_card bc " +
                     "LEFT JOIN card c ON c.card_id = bc.card_id " +
                     "LEFT JOIN card_price cp ON cp.card_id = bc.card_id " +
                     "WHERE bc.binder_id = ? " +
                     "ORDER BY cp.trend_price DESC LIMIT 1";
 
-        String sealedSql = "SELECT sp.name, spr.trend_price, bs.image_url " +
+        String sealedSql = "SELECT sp.name, spr.trend_price AS price, bs.image_url " +
                     "FROM binder_sealed bs " +
                     "LEFT JOIN sealed_prod sp ON sp.id = bs.sealed_id " +
                     "LEFT JOIN sealed_price spr ON spr.sealed_id = bs.sealed_id " +
@@ -90,14 +90,14 @@ public class StatsService {
     }
 
     private Map<String,Object> getCheapest (int binderId){
-        String cardSql = "SELECT c.name, cp.trend_price, bc.image_url " +
+        String cardSql = "SELECT c.name, cp.trend_price AS price, bc.image_url " +
                 "FROM binder_card bc " +
                 "LEFT JOIN card c ON c.card_id = bc.card_id " +
                 "LEFT JOIN card_price cp ON cp.card_id = bc.card_id " +
                 "WHERE bc.binder_id = ? " +
                 "ORDER BY cp.trend_price ASC LIMIT 1";
 
-        String sealedSql = "SELECT sp.name, spr.trend_price, bs.image_url " +
+        String sealedSql = "SELECT sp.name, spr.trend_price AS price, bs.image_url " +
                 "FROM binder_sealed bs " +
                 "LEFT JOIN sealed_prod sp ON sp.id = bs.sealed_id " +
                 "LEFT JOIN sealed_price spr ON spr.sealed_id = bs.sealed_id " +
