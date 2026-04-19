@@ -65,7 +65,9 @@ router.get("/:id/stats", auth, async (req, res) => {
     if (!binderCheck) return res.status(404).json({ message: "Not found" });
 
     console.log("Fetching stats for binder:", binder_id);
-    const response = await fetch(`http://tcgdigibind.railway.internal:8080/stats/binder/${binder_id}`);
+    const response = await fetch(
+      `https://tcgdigibind-production-9172.up.railway.app/stats/binder/${binder_id}`,
+    );
     console.log("Java response status:", response.status);
     const data = await response.json();
     res.json(data);
