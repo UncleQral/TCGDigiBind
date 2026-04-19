@@ -64,10 +64,13 @@ router.get("/:id/stats", auth, async (req, res) => {
     );
     if (!binderCheck) return res.status(404).json({ message: "Not found" });
 
+    console.log("Fetching stats for binder:", binder_id);
     const response = await fetch(`http://tcgdigibind.railway.internal:8080/stats/binder/${binder_id}`);
+    console.log("Java response status:", response.status);
     const data = await response.json();
     res.json(data);
   } catch (err) {
+    console.log("Stats error:", err.message);
     handleError(res, err);
   }
 });
