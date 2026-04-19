@@ -56,7 +56,7 @@ router.get("/:id", auth, async (req, res) => {
 router.get("/:id/stats", auth, async (req, res) => {
   try {
     const response = await fetch(
-      `http://localhost:8080/stats/binder/${req.params.id}`,
+      `http://tcgdigibind.railway.internal:8080/stats/binder/${req.params.id}`,
     );
     const data = await response.json();
     res.json(data);
