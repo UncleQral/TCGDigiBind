@@ -53,6 +53,18 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+router.get("/:id/stats", auth, async (req, res) => {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/stats/binder/${req.params.id}`,
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    handleError(res, err);
+  }
+});
+
 router.post("/", auth, async (req, res) => {
   try {
     const user_id = req.user.id;
